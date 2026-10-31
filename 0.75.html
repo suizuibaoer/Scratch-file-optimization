@@ -1,1 +1,1162 @@
-<!doctype html> <html lang=zh-CN> <head> <meta charset=utf-8> <meta name=viewport content="width=device-width,initial-scale=1"> <title>Scratch 文件优化器</title> <style>:root{font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;background:#fff;color:#000}[theme=dark]{background:#111;color:#eee;color-scheme:dark}a{color:#00f}[theme=dark] a{color:#56b2ff}a:active{color:red}input[type=number],input[type=text],textarea{padding:2px}input[type=number],input[type=text],textarea{background-color:#fff;color:#000;border:1px solid #a0a0a0;border-radius:2px}[theme=dark] input[type=number],[theme=dark] input[type=text],[theme=dark] textarea{background-color:#333;color:#fff;border-color:#888}h1,h2,h3,p{margin:12px 0}summary{cursor:pointer}input{font-size:.8em}main{padding-bottom:10px}footer{text-align:center}footer>div{margin-top:12px}.disclaimer{font-style:italic}.version{font-size:small;opacity:.8}.version a{color:inherit}.card{max-width:625px;margin:auto;border-radius:.3em;background-color:#fff;padding:1em;margin-top:1em;margin-bottom:1em;box-shadow:0 2px .5em .1em rgba(0,0,0,.2)}[theme=dark] .card{background:#222}.caption{font-style:italic}.reset{float:right}button.button{position:relative;font-family:inherit;font-size:14px;color:#fff;border:none;padding:.5rem 1rem;margin:0;border-radius:4px;overflow:hidden;cursor:pointer;font-weight:700}button.button .text{display:flex;align-items:center;justify-content:center;position:relative;z-index:10}button.button .dimmer{display:none;position:absolute;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.25)}button.button:active .dimmer{display:block}button.button[disabled]{opacity:.5;cursor:not-allowed}button.icon{width:26px;height:26px;margin:0;padding:4px;border:none;background:0 0;cursor:pointer;border-radius:4px;line-height:0;color:inherit}button.icon:hover{background:rgba(0,0,0,.15)}button.icon:active{background:rgba(0,0,0,.3)}[theme=dark] button.icon:hover{background:rgba(255,255,255,.15)}[theme=dark] button.icon:active{background:rgba(255,255,255,.3)}button.icon svg{width:100%;height:100%}.container{background:0 0;color:#555;width:100%;box-sizing:border-box;border:3px dashed currentColor;transition:.2s border-color,.2s color;border-radius:20px;min-height:90px;font:inherit;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;position:relative;cursor:pointer;padding:4px}[theme=dark] .container{color:#aaa}.container:active,.container:focus-visible,.dropping{color:#4f7bd3}[theme=dark] .container:active,[theme=dark] .container:focus-visible,[theme=dark] .dropping{color:#b2c3e4}.placeholder{font-size:1.5em}.selected{display:flex;align-items:center;justify-content:center;flex-wrap:wrap}.selected>:not(:last-child){margin-right:12px}.options{margin:12px 0}.option{min-height:25px;display:flex;align-items:center;flex-wrap:wrap;margin:4px 0}.option input[type=checkbox]{margin-right:6px}.group{margin:12px 0}.group:last-child,.option:last-child,p:last-child{margin-bottom:0}.buttons{display:flex;flex-wrap:wrap}.button+.button{margin-left:4px}.side-buttons{display:flex;margin-left:auto}.warning{font-weight:700;background:#ff0;color:#000;padding:10px;border-radius:10px}.alternative{font-size:smaller}.progress{display:flex;align-items:center;flex-direction:column}.bar-outer{width:200px;height:10px;border:1px solid currentColor;margin-bottom:4px;background:#000}[theme=dark] .bar-outer{background:0 0}.bar-inner{height:100%;width:0;background:#fff}.progress .text{font-style:italic}.badge{background-color:#b117f8;border-bottom:2px solid #6f0073;color:#fff;padding:2px 5px;border-radius:4px}header{max-width:625px;margin:1em auto 0;display:flex;align-items:center;gap:8px}header h1{flex:1;font-size:1.6em}header .icon{flex:0 0 auto}ul.list{list-style:none;margin:12px 0 0;padding:0;max-height:190px;overflow:auto}ul.list li{display:flex;align-items:center;gap:8px;padding:3px 6px;border:1px solid #a0a0a0;border-radius:2px;margin-bottom:4px;font-size:.9em}[theme=dark] ul.list li{border-color:#888}ul.list .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}ul.list .sz{font-size:.85em;opacity:.7}ul.list button{border:none;background:0 0;cursor:pointer;font-size:1em;color:inherit}ul.result{list-style:none;margin:12px 0 0;padding:0}ul.result li{display:flex;align-items:center;gap:10px;padding:4px 6px;border:1px solid #a0a0a0;border-radius:2px;margin-bottom:4px}[theme=dark] ul.result li{border-color:#888}ul.result .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}ul.result .nm small{display:block;opacity:.7;font-size:.82em}ul.result a{font-size:.9em}pre#log{font-family:monospace;font-size:13px;line-height:1.5;white-space:pre-wrap;word-break:break-all;height:240px;overflow:auto;margin:0;padding:6px;background:#f4f4f4;border:1px solid #a0a0a0;border-radius:2px}[theme=dark] pre#log{background:#1a1a1a;border-color:#888}#log .hl{font-weight:700}#log .ok{color:#0a7a49}#log .warn{color:#a86a00}#log .err{color:#c00}[theme=dark] #log .ok{color:#57d99a}[theme=dark] #log .warn{color:#ffc247}[theme=dark] #log .err{color:#ff8080}</style> </head> <body> <header> <h1>Scratch 文件优化器 <span class=badge>网页版</span></h1> <button class=icon id=themeBtn title="切换浅色 / 深色主题"></button> </header> <main> <div class=card style="border-top:6px solid #ffab19"> <h2>选择输入</h2> <div class=container id=drop tabindex=0> <div id=dropInner> <div class=placeholder>把 .sb3 或整个文件夹拖到这里</div> <p class=alternative>只会挑出文件夹里的 Scratch 文件（<code>.sb3</code> / <code>.sb2</code>），其它文件自动忽略</p> </div> <input type=file id=pick multiple accept=.sb3,.sb2 hidden> <input type=file id=pickDir webkitdirectory multiple hidden> </div> <div class=buttons style=margin-top:12px> <button class=button id=pickBtn style=background:#4c97ff><span class=text>选择文件</span><span class=dimmer></span></button> <button class=button id=pickDirBtn style=background:#4c97ff><span class=text>选择文件夹</span><span class=dimmer></span></button> <div class=side-buttons> <button class=button id=clear style=background:#ff8c1a><span class=text>清空</span><span class=dimmer></span></button> </div> </div> <div id=banner class=warning hidden></div> <ul class=list id=files></ul> <p class=caption id=cntHint>还没有选择文件</p> </div> <div class=card style="border-top:6px solid #96f"> <h2>优化选项</h2> <div class=options> <div class=option><input type=checkbox id=opFuncs checked><label for=opFuncs>移除未使用的自定义积木（从事件入口做可达性分析）</label></div> <div class=option><input type=checkbox id=opDead checked><label for=opDead>清理孤儿 / 死积木（顶层非帽子块、parent 断链块及其子树）</label></div> <div class=option><input type=checkbox id=opShadow checked><label for=opShadow>清理阴影值（被积木覆盖掉的默认输入值）</label></div> <div class=option><input type=checkbox id=opExt checked><label for=opExt>分析第三方扩展（<code>data:</code> 内嵌始终解析；联网下载受 CORS 限制）</label></div> </div> <div class=group> <div class=option><input type=checkbox id=opTree checked><label for=opTree>保留文件夹结构（.zip 内按相对路径存放，不会多套一层 <code>optimized_output</code>）</label></div> <div class=option><input type=checkbox id=opSuffix><label for=opSuffix>输出文件名加 <code>_cleaned</code></label></div> <div class=option> <label for=level>压缩等级</label> <input type=number id=level min=0 max=9 step=1 inputmode=numeric value=9 title="只能填 0 ~ 9 的整数" style=margin-left:4px> <span class=alternative id=zipNote style=margin-left:8px>正在尝试加载 JSZip…</span> </div> </div> </div> <div class=card style="border-top:6px solid #4cbfe6"> <h2>打包</h2> <button class=button id=run disabled style="background:#ff4c4c;font-size:16px;padding:.6rem 1.4rem"> <span class=text>开始优化</span><span class=dimmer></span> </button> <button class=button id=zipBtn hidden style=background:#0fbd8c> <span class=text>打包下载全部 (.zip)</span><span class=dimmer></span> </button> <div class=progress style=margin-top:12px> <div class=bar-outer><div class=bar-inner id=barIn></div></div> <div class=text id=status>等待选择文件…</div> </div> <p class=alternative>多文件会打进同一个 .zip；未勾选“保留文件夹结构”时全部平铺。</p> </div> <div class=card style="border-top:6px solid #ff8c1a"> <h2>结果</h2> <ul class=result id=res><li style=border:none><span class=nm>还没有结果</span></li></ul> </div> <div class=card style="border-top:6px solid #ff6680"> <h2>控制台</h2> <pre id=log>// 日志会显示在这里</pre> </div> </main> <footer> <div class=version id=dataPill>积木数据加载中…</div> <div class=disclaimer>全部处理都在本机浏览器完成，文件不会上传；仅“分析第三方扩展”会在你允许时下载扩展源码。</div> <div class=version>界面风格参照 <a href=https://packager.turbowarp.org/ target=_blank rel=noreferrer>TurboWarp Packager</a></div> </footer> <script>const HAT_OPCODES=new Set(["boost_whenColor","boost_whenTilted","control_start_as_clone","ev3_whenBrightnessLessThan","ev3_whenButtonPressed","ev3_whenDistanceLessThan","event_whenbackdropswitchesto","event_whenbroadcastreceived","event_whenflagclicked","event_whengreaterthan","event_whenkeypressed","event_whenstageclicked","event_whenthisspriteclicked","event_whentouchingobject","faceSensing_whenFaceDetected","faceSensing_whenSpriteTouchesPart","faceSensing_whenTilted","gdxfor_whenForcePushedOrPulled","gdxfor_whenGesture","gdxfor_whenTilted","makeymakey_whenCodePressed","makeymakey_whenMakeyKeyPressed","microbit_whenButtonPressed","microbit_whenGesture","microbit_whenPinConnected","microbit_whenTilted","procedures_definition","speech2text_whenIHearHat","videoSensing_whenMotionGreaterThan","wedo2_whenDistance","wedo2_whenTilted"]),ALL_OPCODES=new Set(["argument_editor_boolean","argument_editor_string_number","argument_reporter_boolean","argument_reporter_string_number","boost_getMotorPosition","boost_getTiltAngle","boost_menu_COLOR","boost_menu_MOTOR_DIRECTION","boost_menu_MOTOR_ID","boost_menu_MOTOR_REPORTER_ID","boost_menu_TILT_DIRECTION","boost_menu_TILT_DIRECTION_ANY","boost_motorOff","boost_motorOn","boost_motorOnFor","boost_motorOnForRotation","boost_seeingColor","boost_setLightHue","boost_setMotorDirection","boost_setMotorPower","boost_whenColor","boost_whenTilted","control_all_at_once","control_clear_counter","control_create_clone_of","control_create_clone_of_menu","control_delete_this_clone","control_for_each","control_forever","control_get_counter","control_if","control_if_else","control_incr_counter","control_repeat","control_repeat_until","control_stop","control_wait","control_wait_until","control_while","data_addtolist","data_changevariableby","data_deletealloflist","data_deleteoflist","data_hidelist","data_hidevariable","data_insertatlist","data_itemnumoflist","data_itemoflist","data_lengthoflist","data_listcontainsitem","data_listcontents","data_listindexall","data_listindexrandom","data_replaceitemoflist","data_setvariableto","data_showlist","data_showvariable","data_variable","ev3_beep","ev3_buttonPressed","ev3_getBrightness","ev3_getDistance","ev3_getMotorPosition","ev3_menu_motorPorts","ev3_menu_sensorPorts","ev3_motorSetPower","ev3_motorTurnClockwise","ev3_motorTurnCounterClockwise","ev3_whenBrightnessLessThan","ev3_whenButtonPressed","ev3_whenDistanceLessThan","event_broadcast","event_broadcast_menu","event_broadcastandwait","event_touchingobjectmenu","event_whengreaterthan","event_whentouchingobject","faceSensing_faceIsDetected","faceSensing_faceSize","faceSensing_faceTilt","faceSensing_goToPart","faceSensing_pointInFaceTiltDirection","faceSensing_setSizeToFaceSize","faceSensing_whenFaceDetected","faceSensing_whenSpriteTouchesPart","faceSensing_whenTilted","gdxfor_getAcceleration","gdxfor_getForce","gdxfor_getSpinSpeed","gdxfor_getTilt","gdxfor_isFreeFalling","gdxfor_isTilted","gdxfor_menu_axisOptions","gdxfor_menu_gestureOptions","gdxfor_menu_pushPullOptions","gdxfor_menu_tiltAnyOptions","gdxfor_menu_tiltOptions","gdxfor_whenForcePushedOrPulled","gdxfor_whenGesture","gdxfor_whenTilted","looks_backdropnumbername","looks_backdrops","looks_changeeffectby","looks_changesizeby","looks_changestretchby","looks_cleargraphiceffects","looks_costume","looks_costumenumbername","looks_goforwardbackwardlayers","looks_gotofrontback","looks_hide","looks_hideallsprites","looks_nextbackdrop","looks_nextcostume","looks_say","looks_sayforsecs","looks_seteffectto","looks_setsizeto","looks_setstretchto","looks_show","looks_size","looks_switchbackdropto","looks_switchbackdroptoandwait","looks_switchcostumeto","looks_think","looks_thinkforsecs","makeymakey_menu_KEY","makeymakey_menu_SEQUENCE","makeymakey_whenCodePressed","makeymakey_whenMakeyKeyPressed","matrix","microbit_displayClear","microbit_displaySymbol","microbit_displayText","microbit_getTiltAngle","microbit_isButtonPressed","microbit_isTilted","microbit_menu_buttons","microbit_menu_gestures","microbit_menu_pinState","microbit_menu_tiltDirection","microbit_menu_tiltDirectionAny","microbit_menu_touchPins","microbit_whenButtonPressed","microbit_whenGesture","microbit_whenPinConnected","microbit_whenTilted","motion_align_scene","motion_changexby","motion_changeyby","motion_direction","motion_glidesecstoxy","motion_glideto","motion_glideto_menu","motion_goto","motion_goto_menu","motion_gotoxy","motion_ifonedgebounce","motion_movesteps","motion_pointindirection","motion_pointtowards","motion_pointtowards_menu","motion_scroll_right","motion_scroll_up","motion_setrotationstyle","motion_setx","motion_sety","motion_turnleft","motion_turnright","motion_xposition","motion_xscroll","motion_yposition","motion_yscroll","music_changeTempo","music_getTempo","music_menu_DRUM","music_menu_INSTRUMENT","music_midiPlayDrumForBeats","music_midiSetInstrument","music_playDrumForBeats","music_playNoteForBeats","music_restForBeats","music_setInstrument","music_setTempo","note","operator_add","operator_and","operator_contains","operator_divide","operator_equals","operator_gt","operator_join","operator_length","operator_letter_of","operator_lt","operator_mathop","operator_mod","operator_multiply","operator_not","operator_or","operator_random","operator_round","operator_subtract","pen_changePenColorParamBy","pen_changePenHueBy","pen_changePenShadeBy","pen_changePenSizeBy","pen_clear","pen_menu_colorParam","pen_penDown","pen_penUp","pen_setPenColorParamTo","pen_setPenColorToColor","pen_setPenHueToNumber","pen_setPenShadeToNumber","pen_setPenSizeTo","pen_stamp","procedures_call","procedures_declaration","procedures_definition","procedures_prototype","sensing_answer","sensing_askandwait","sensing_coloristouchingcolor","sensing_current","sensing_dayssince2000","sensing_distanceto","sensing_distancetomenu","sensing_keyoptions","sensing_keypressed","sensing_loud","sensing_loudness","sensing_mousedown","sensing_mousex","sensing_mousey","sensing_of","sensing_of_object_menu","sensing_online","sensing_resettimer","sensing_setdragmode","sensing_timer","sensing_touchingcolor","sensing_touchingobject","sensing_touchingobjectmenu","sensing_userid","sensing_username","sound_beats_menu","sound_changeeffectby","sound_changevolumeby","sound_cleareffects","sound_effects_menu","sound_play","sound_playuntildone","sound_seteffectto","sound_setvolumeto","sound_sounds_menu","sound_stopallsounds","sound_volume","speech2text_getSpeech","speech2text_listenAndWait","speech2text_whenIHearHat","text2speech_menu_languages","text2speech_menu_voices","text2speech_setLanguage","text2speech_setVoice","text2speech_speakAndWait","translate_getTranslate","translate_getViewerLanguage","translate_menu_languages","tw_getButtonIsDown","tw_getLastKeyPressed","videoSensing_menu_ATTRIBUTE","videoSensing_menu_SUBJECT","videoSensing_menu_VIDEO_STATE","videoSensing_setVideoTransparency","videoSensing_videoOn","videoSensing_videoToggle","videoSensing_whenMotionGreaterThan","wedo2_getDistance","wedo2_getTiltAngle","wedo2_isTilted","wedo2_menu_MOTOR_DIRECTION","wedo2_menu_MOTOR_ID","wedo2_menu_OP","wedo2_menu_TILT_DIRECTION","wedo2_menu_TILT_DIRECTION_ANY","wedo2_motorOff","wedo2_motorOn","wedo2_motorOnFor","wedo2_playNoteFor","wedo2_setLightHue","wedo2_setMotorDirection","wedo2_startMotorPower","wedo2_whenDistance","wedo2_whenTilted"]),KNOWN_PREFIXES=new Set(["argument","boost","control","data","ev3","event","faceSensing","gdxfor","looks","makeymakey","matrix","microbit","motion","music","note","operator","pen","procedures","sensing","sound","speech2text","text2speech","translate","tw","videoSensing","wedo2"]),SCRIPT_STARTER_TYPES=new Set(["hat","event"]),NUMERIC_PRIMITIVES=new Set([4,5,6,7,8,9,10]),opcodePrefix=e=>"string"==typeof e?e.split("_")[0]:"",isHatOpcode=e=>"string"==typeof e&&HAT_OPCODES.has(e),isHatBlock=e=>!!e&&"object"==typeof e&&isHatOpcode(e.opcode);function isKnownNonHat(e){return"string"==typeof e&&!HAT_OPCODES.has(e)&&ALL_OPCODES.has(e)}const COMPRESSED_BLOCK_TYPES=new Set([4,5,6,7,8,9,10,11,12,13]);function isKnownNonHatBlock(e){return Array.isArray(e)?COMPRESSED_BLOCK_TYPES.has(e[0]):!(!e||"object"!=typeof e)&&isKnownNonHat(e.opcode)}function cleanAllShadowValues(e){let t=0;for(const n of e.targets||[]){const e=n&&n.blocks;if(e&&"object"==typeof e)for(const n of Object.values(e))if(n&&"object"==typeof n)for(const e of Object.values(n.inputs||{})){if(!Array.isArray(e)||e.length<3)continue;if(3!==e[0])continue;if(!Array.isArray(e[2])||2!==e[2].length)continue;const[n,o]=e[2];NUMERIC_PRIMITIVES.has(n)&&""!==o&&(e[2][1]="",t++)}}return t}function buildCallGraph(e){const t=new Map,n=new Map,o=new Set;return(e.targets||[]).forEach((e,s)=>{if(!e||"object"!=typeof e)return;const i=e.blocks;if(!i||"object"!=typeof i)return;const r=(e,t)=>e+"\0"+t,a=e=>{const t=(e.inputs||{}).custom_block,n=Array.isArray(t)&&t.length>1?t[1]:null,o=n&&i[n];return o&&"object"==typeof o&&(o.mutation||{}).proccode||""};for(const[e,n]of Object.entries(i)){if(!n||"object"!=typeof n||"procedures_definition"!==n.opcode)continue;const o=a(n),i=(n.inputs||{}).custom_block,l=Array.isArray(i)&&i.length>1?i[1]:null;o&&l&&t.set(r(s,o),[e,l])}for(const e of Object.values(i)){if(!e||"object"!=typeof e||"procedures_call"!==e.opcode)continue;const t=(e.mutation||{}).proccode||"";if(!t)continue;let l=null,c=e.parent,d=new Set;for(;c&&"string"==typeof c&&!d.has(c);){d.add(c);const e=i[c];if(!e||"object"!=typeof e)break;if("procedures_definition"===e.opcode){l=a(e);break}c=e.parent}if(l){const e=r(s,l);n.has(e)||n.set(e,new Set),n.get(e).add(r(s,t))}else o.add(r(s,t))}}),{definitions:t,edges:n,entry:o}}function cleanUnusedProcedures(e){const{definitions:t,edges:n,entry:o}=buildCallGraph(e);if(!t.size)return{removed:0,names:[]};const s=new Set,i=[...o];for(;i.length;){const e=i.shift();if(!s.has(e)){s.add(e);for(const t of n.get(e)||[])s.has(t)||i.push(t)}}const r=[...t.keys()].filter(e=>!s.has(e)).sort();if(!r.length)return{removed:0,names:[]};const a=[];for(const n of r){const o=n.split("\0"),s=Number(o[0]),i=o[1],[r,l]=t.get(n),c=e.targets[s],d=c&&c.blocks;d&&(removeProcedureBlocks(d,r,l),a.push((c.name||"目标"+s)+" → "+i))}return{removed:r.length,names:a}}function removeProcedureBlocks(e,t,n){const o=new Set([t,n]),s=e[t];if(s&&"object"==typeof s)for(const e of Object.values(s.inputs||{}))Array.isArray(e)&&e.length>1&&"string"==typeof e[1]&&o.add(e[1]);const i=[...o];for(;i.length;){const t=e[i.pop()];if(t&&"object"==typeof t){"string"==typeof t.next&&e[t.next]&&!o.has(t.next)&&(o.add(t.next),i.push(t.next));for(const n of Object.values(t.inputs||{}))Array.isArray(n)&&n.length>1&&"string"==typeof n[1]&&e[n[1]]&&!o.has(n[1])&&(o.add(n[1]),i.push(n[1]))}}for(const t of o)delete e[t];return o.size}function collectReachable(e,t){const n=new Set,o=[...t];for(;o.length;){const t=o.pop();if("string"!=typeof t||n.has(t))continue;const s=e[t];if(s&&"object"==typeof s){n.add(t),"string"==typeof s.next&&o.push(s.next);for(const t of Object.values(s.inputs||{}))if(Array.isArray(t))for(const n of t)"string"==typeof n&&e[n]&&o.push(n)}}return n}function findDeadBlocks(e){if(!e||"object"!=typeof e)return new Set;const t=[];for(const[n,o]of Object.entries(e)){if(!o||"object"!=typeof o)continue;const s=o.parent;null!=s&&e[s]||t.push(n)}const n=t.filter(t=>!isKnownNonHatBlock(e[t])),o=collectReachable(e,n),s=new Set;for(const t of Object.keys(e))o.has(t)||s.add(t);return s}function cleanDeadBlocks(e){let t=0;for(const n of e.targets||[]){if(!n||"object"!=typeof n)continue;const e=n.blocks;if(!e||"object"!=typeof e||!Object.keys(e).length)continue;const o=findDeadBlocks(e);if(!o.size)continue;for(const t of o)delete e[t];t+=o.size;const s=n.comments;if(s&&"object"==typeof s)for(const[e,t]of Object.entries(s))t&&"object"==typeof t&&o.has(t.blockId)&&delete s[e]}return t}function collectExtensionUrls(e){const t=new Map,n=[e,...(e.targets||[]).filter(e=>e&&"object"==typeof e)];for(const e of n){const n=e.extensionURLs;if(n&&"object"==typeof n)for(const[e,o]of Object.entries(n))"string"!=typeof e||"string"!=typeof o||t.has(e)||t.set(e,o)}return t}function decodeDataUrl(e){try{const t=e.indexOf(","),n=e.slice(5,t).toLowerCase(),o=e.slice(t+1);if(n.includes(";base64")){const e=atob(o.replace(/\s+/g,"")),t=new Uint8Array(e.length);for(let n=0;n<e.length;n++)t[n]=e.charCodeAt(n);return new TextDecoder("utf-8").decode(t)}return decodeURIComponent(o)}catch(e){return null}}function decodeEmbeddedSources(e,t=0){if(t>=3)return[];const n=[],o=/['"]([A-Za-z0-9+/=\s]{150,})['"]/g;let s;for(;s=o.exec(e);){const e=s[1].replace(/\s+/g,"");if(e.length<150)continue;let o;try{const t=atob(e+"=".repeat(-e.length%4)),n=new Uint8Array(t.length);for(let e=0;e<t.length;e++)n[e]=t.charCodeAt(e);o=new TextDecoder("utf-8",{fatal:!0}).decode(n)}catch(e){continue}(o.includes("opcode")||o.includes("blockType")||o.includes("getInfo"))&&(n.push(o),n.push(...decodeEmbeddedSources(o,t+1)))}return n}function extractBlockTypes(e){const t=[],n=/opcode\s*:\s*['"]([A-Za-z0-9_]+)['"]/g;let o;for(;o=n.exec(e);){const n=o.index+o[0].length;let s=n,i=0,r=null;const a=e.length;for(;s<a&&s-n<8e3;){const t=e[s];if("{"===t)i++,s++;else if("}"===t){if(0===i)break;i--,s++}else if('"'===t||"'"===t||"`"===t){const n=t;for(s++;s<a&&e[s]!==n;)"\\"===e[s]&&s++,s++;s++}else if(0===i&&e.startsWith("blockType",s)){const t=/^blockType\s*:\s*(?:"([^"]*)"|'([^']*)'|([A-Za-z0-9_$.]+))/.exec(e.slice(s,s+160));if(t){r=(t[1]||t[2]||t[3]||"").split(".").pop().replace(/["']/g,"").toLowerCase();break}s++}else s++}t.push([o[1],r])}return t}async function analyzeProjectExtensions(e,t,n){const o=collectExtensionUrls(e);let s=0,i=0;const r=[];for(const e of[...o.keys()].sort()){const a=o.get(e),l=a.startsWith("data:");if(!l&&!t)continue;let c=null;if(l)n("  分析扩展 ["+e+"]（内嵌 data: 源码）…","k"),c=decodeDataUrl(a);else{n("  分析扩展 ["+e+"]（联网下载）…","k");try{const e=await fetch(a,{redirect:"follow"});e.ok?c=await e.text():n("   · 下载失败 HTTP "+e.status,"err")}catch(e){n("   · 下载被拦截（浏览器 CORS / 网络）："+e.message,"warn")}}if(!c){r.push(e);continue}const d=decodeEmbeddedSources(c);d.length&&n("   · 解出 "+d.length+" 个内嵌打包片段","k");const f=new Set,u=new Set;for(const e of[c,...d])for(const[t,n]of extractBlockTypes(e))f.add(t),n&&SCRIPT_STARTER_TYPES.has(n)&&u.add(t);if(f.size){for(const t of f){const n=e+"_"+t;ALL_OPCODES.has(n)||(ALL_OPCODES.add(n),i++)}for(const t of u){const n=e+"_"+t;HAT_OPCODES.has(n)||(HAT_OPCODES.add(n),s++)}KNOWN_PREFIXES.add(e),n("   · 解析出 "+f.size+" 个积木 / "+u.size+" 个帽子","ok")}else r.push(e)}return{newHats:s,newBlocks:i,failed:r}}function diagnoseExtensions(e){const t=new Set,n=e.extensions;if(Array.isArray(n))for(const e of n)"string"==typeof e&&t.add(e);for(const n of e.targets||[]){const e=n&&n.blocks;if(e&&"object"==typeof e)for(const n of Object.values(e))n&&"object"==typeof n&&t.add(opcodePrefix(n.opcode))}return[...t].filter(e=>e&&!KNOWN_PREFIXES.has(e)).sort()}const CRC_TABLE=(()=>{const e=new Uint32Array(256);for(let t=0;t<256;t++){let n=t;for(let e=0;e<8;e++)n=1&n?3988292384^n>>>1:n>>>1;e[t]=n>>>0}return e})();function crc32(e){let t=4294967295;for(let n=0;n<e.length;n++)t=CRC_TABLE[255&(t^e[n])]^t>>>8;return(4294967295^t)>>>0}async function inflateRaw(e){const t=new Blob([e]).stream().pipeThrough(new DecompressionStream("deflate-raw"));return new Uint8Array(await new Response(t).arrayBuffer())}async function deflateRaw(e){const t=new Blob([e]).stream().pipeThrough(new CompressionStream("deflate-raw"));return new Uint8Array(await new Response(t).arrayBuffer())}async function unzip(e){const t=ArrayBuffer.isView(e)?e.buffer.slice(e.byteOffset,e.byteOffset+e.byteLength):e,n=new Uint8Array(t),o=new DataView(t);let s=-1;for(let e=n.length-22;e>=Math.max(0,n.length-22-65535);e--)if(101010256===o.getUint32(e,!0)){s=e;break}if(s<0)throw new Error("不是有效的 zip / sb3 文件");const i=o.getUint16(s+10,!0);let r=o.getUint32(s+16,!0);const a=new TextDecoder("utf-8"),l=[];for(let e=0;e<i;e++){if(r+46>n.length||33639248!==o.getUint32(r,!0))throw new Error("zip 中央目录损坏");const e=o.getUint16(r+10,!0),t=o.getUint32(r+20,!0),s=o.getUint16(r+28,!0),i=o.getUint16(r+30,!0),c=o.getUint16(r+32,!0),d=o.getUint32(r+42,!0),f=a.decode(n.subarray(r+46,r+46+s));if(r+=46+s+i+c,f.endsWith("/"))continue;if(67324752!==o.getUint32(d,!0))throw new Error("zip 本地头损坏");const u=d+30+o.getUint16(d+26,!0)+o.getUint16(d+28,!0),_=n.subarray(u,u+t),p=0===e?_.slice():await inflateRaw(_);l.push({name:f,data:p})}return l}async function zipFiles(e,t=9){if("undefined"!=typeof JSZip){const n=new JSZip;for(const t of e)n.file(t.name,t.data instanceof Uint8Array?t.data:new Uint8Array(t.data));return await n.generateAsync({type:"blob",compression:t>0?"DEFLATE":"STORE",compressionOptions:{level:Math.max(1,Math.min(9,t))}})}const n=new TextEncoder,o=[],s=[];let i=0;for(const t of e){const e=n.encode(t.name),r=t.data instanceof Uint8Array?t.data:new Uint8Array(t.data),a=crc32(r);let l=r,c=0;try{const e=await deflateRaw(r);e.length<r.length&&(l=e,c=8)}catch(e){}const d=new Uint8Array(30+e.length),f=new DataView(d.buffer);f.setUint32(0,67324752,!0),f.setUint16(4,20,!0),f.setUint16(6,2048,!0),f.setUint16(8,c,!0),f.setUint32(14,a,!0),f.setUint32(18,l.length,!0),f.setUint32(22,r.length,!0),f.setUint16(26,e.length,!0),f.setUint16(28,0,!0),d.set(e,30),o.push(d,l);const u=new Uint8Array(46+e.length),_=new DataView(u.buffer);_.setUint32(0,33639248,!0),_.setUint16(4,20,!0),_.setUint16(6,20,!0),_.setUint16(8,2048,!0),_.setUint16(10,c,!0),_.setUint32(16,a,!0),_.setUint32(20,l.length,!0),_.setUint32(24,r.length,!0),_.setUint16(28,e.length,!0),_.setUint32(42,i,!0),u.set(e,46),s.push(u),i+=d.length+l.length}const r=s.reduce((e,t)=>e+t.length,0),a=new Uint8Array(22),l=new DataView(a.buffer);return l.setUint32(0,101010256,!0),l.setUint16(8,e.length,!0),l.setUint16(10,e.length,!0),l.setUint32(12,r,!0),l.setUint32(16,i,!0),new Blob([...o,...s,a],{type:"application/zip"})}async function optimizeSb3(e,t,n,o){const s=await unzip(await e.arrayBuffer()),i=s.find(e=>"project.json"===e.name);if(!i)throw new Error("压缩包里没有 project.json");const r=JSON.parse(new TextDecoder("utf-8").decode(i.data));if(n.ext){const e=await analyzeProjectExtensions(r,n.extNetwork,o);(e.newHats||e.newBlocks)&&o("  扩展分析：新识别 "+e.newHats+" 个帽子 / "+e.newBlocks+" 个积木","ok"),e.failed.length&&o("  扩展分析失败（其积木按未知保守保留）："+e.failed.join("、"),"warn");const t=diagnoseExtensions(r);t.length&&o("  未覆盖扩展（其积木按未知保守保留）："+t.join("、"),"warn")}const a={funcs:0,dead:0,shadows:0};if(n.funcs){const e=cleanUnusedProcedures(r);a.funcs=e.removed;for(const t of e.names)o("  移除："+t,"k")}n.dead&&(a.dead=cleanDeadBlocks(r)),n.shadows&&(a.shadows=cleanAllShadowValues(r));const l=new Map(s.map(e=>[e.name,e.data]));l.set("project.json",(new TextEncoder).encode(JSON.stringify(r)));const c=[...l.entries()].map(([e,t])=>({name:e,data:t})),d=await zipFiles(c,n.level),f=e.name.replace(/\.(sb3|sb2|zip)$/i,""),u=t&&t.includes("/")?t.slice(0,t.lastIndexOf("/")+1):"",_=f+(n.suffix?"_cleaned":"")+".sb3";return{blob:d,name:n.keepTree&&u?u+_:_,fileName:_,inSize:e.size,outSize:d.size,stats:a}}const $=e=>document.querySelector(e),el={drop:$("#drop"),dropInner:$("#dropInner"),pick:$("#pick"),pickDir:$("#pickDir"),pickBtn:$("#pickBtn"),pickDirBtn:$("#pickDirBtn"),files:$("#files"),cntHint:$("#cntHint"),run:$("#run"),clear:$("#clear"),zipBtn:$("#zipBtn"),banner:$("#banner"),log:$("#log"),res:$("#res"),barIn:$("#barIn"),status:$("#status"),dataPill:$("#dataPill"),opFuncs:$("#opFuncs"),opDead:$("#opDead"),opShadow:$("#opShadow"),opExt:$("#opExt"),opTree:$("#opTree"),opSuffix:$("#opSuffix"),level:$("#level"),zipNote:$("#zipNote"),themeBtn:$("#themeBtn")},state={files:[],results:[],hasJSZip:!1},fmt=e=>e<1024?e+" B":e<1048576?(e/1024).toFixed(1)+" KB":(e/1048576).toFixed(2)+" MB",ACTIVE=()=>state.hasJSZip;function log(e,t){const n=document.createElement("div");t&&(n.className=t),n.textContent=e,el.log.appendChild(n),el.log.scrollTop=el.log.scrollHeight}function banner(e){e?(el.banner.textContent=e,el.banner.hidden=!1):el.banner.hidden=!0}function systemTheme(){return window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}function applyTheme(e){document.documentElement.setAttribute("theme",e);try{localStorage.setItem("sb3-theme",e)}catch(e){}el.themeBtn.innerHTML="dark"===e?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>'}el.themeBtn.onclick=()=>applyTheme("dark"===document.documentElement.getAttribute("theme")?"light":"dark");const DEFAULT_LEVEL=9;function levelValue(){const e=String(el.level.value).replace(/\D/g,"");if(!e)return 9;const t=parseInt(e.slice(0,2),10);return Number.isFinite(t)?Math.min(9,Math.max(0,t)):9}function normalizeLevel(){let e=String(el.level.value).replace(/\D/g,"");e.length>1&&(e=e.slice(-1)),""!==e&&Number(e)>9&&(e="9"),e!==el.level.value&&(el.level.value=e)}function renderFiles(){if(el.files.innerHTML="",state.files.forEach((e,t)=>{const n=document.createElement("li"),o=document.createElement("span");o.className="nm",o.textContent=e.path,e.path!==e.file.name&&(o.title=e.path);const s=document.createElement("span");s.className="sz",s.textContent=fmt(e.file.size);const i=document.createElement("button");i.textContent="×",i.title="移除",i.onclick=()=>{state.files.splice(t,1),renderFiles()},n.append(o,s,i),el.files.appendChild(n)}),state.files.length){const e=document.createElement("div");if(e.className="selected",state.files.slice(0,3).forEach(t=>{const n=document.createElement("span");n.textContent=t.path,e.appendChild(n)}),state.files.length>3){const t=document.createElement("span");t.textContent="… 等 "+state.files.length+" 个文件",e.appendChild(t)}el.dropInner.replaceChildren(e)}else{const e=document.createElement("div");e.className="placeholder",e.textContent="把 .sb3 或整个文件夹拖到这里";const t=document.createElement("p");t.className="alternative",t.innerHTML="只会挑出文件夹里的 Scratch 文件（<code>.sb3</code> / <code>.sb2</code>），其它文件自动忽略",el.dropInner.replaceChildren(e,t)}el.cntHint.textContent=state.files.length?"已选 "+state.files.length+" 个 Scratch 文件":"还没有选择文件",el.run.disabled=0===state.files.length,el.status.textContent=state.files.length?"准备好了，点“开始优化”":"等待选择文件…"}function addFiles(e){for(const t of e){const e=t.file||t,n=t.path||e.name;/\.(sb3|sb2)$/i.test(e.name)&&(state.files.some(t=>t.path===n&&t.file.size===e.size)||state.files.push({file:e,path:n}))}renderFiles()}async function walkEntry(e,t,n){if(e)if(e.isFile)await new Promise(o=>e.file(e=>{t.push({file:e,path:n+e.name}),o()},o));else if(e.isDirectory){const o=e.createReader(),s=[];await new Promise(e=>{const t=()=>o.readEntries(n=>{if(!n.length)return e();s.push(...n),t()},e);t()});for(const o of s)await walkEntry(o,t,n+e.name+"/")}}async function walkHandle(e,t,n){if(e)if("file"===e.kind){const o=await e.getFile();t.push({file:o,path:n+o.name})}else if("directory"===e.kind)for await(const o of e.values())await walkHandle(o,t,n+e.name+"/")}function renderResults(e,t,n){if(el.res.innerHTML="",state.results.length){el.zipBtn.hidden=state.results.length<2;for(const e of state.results){const t=document.createElement("li"),n=document.createElement("span");n.className="nm",n.textContent=e.name;const o=e.inSize?Math.round(100*(1-e.outSize/e.inSize)):0,s=document.createElement("small");s.textContent=fmt(e.inSize)+" → "+fmt(e.outSize)+(e.inSize>=e.outSize?"  −"+o+"%":""),n.appendChild(s);const i=document.createElement("a");i.textContent="下载",i.href=URL.createObjectURL(e.blob),i.download=e.fileName,t.append(n,i),el.res.appendChild(t)}if(state.results.length>1){const o=e?Math.round(100*(1-t/e)):0;log("全部完成："+state.results.length+" 个文件，合计 "+fmt(e)+" → "+fmt(t)+"（省 "+o+"%），用时 "+n+"ms","ok")}}else el.res.innerHTML='<li style="border:none"><span class="nm">没有成功的结果</span></li>'}el.level.addEventListener("input",normalizeLevel),el.level.addEventListener("change",normalizeLevel),el.level.addEventListener("blur",()=>{normalizeLevel(),""===el.level.value&&(el.level.value=String(9))}),el.level.addEventListener("keydown",e=>{1!==e.key.length||/[0-9]/.test(e.key)||e.preventDefault()}),el.pickBtn.onclick=()=>el.pick.click(),el.pickDirBtn.onclick=()=>el.pickDir.click(),el.pick.onchange=e=>{addFiles([...e.target.files]),el.pick.value=""},el.pickDir.onchange=e=>{addFiles([...e.target.files].map(e=>({file:e,path:e.webkitRelativePath||e.name}))),el.pickDir.value=""},["dragenter","dragover"].forEach(e=>el.drop.addEventListener(e,e=>{e.preventDefault(),el.drop.classList.add("dropping")})),["dragleave","drop"].forEach(e=>el.drop.addEventListener(e,t=>{t.preventDefault(),"drop"!==e&&el.drop.contains(t.relatedTarget)||el.drop.classList.remove("dropping")})),window.addEventListener("dragover",e=>e.preventDefault()),window.addEventListener("drop",e=>e.preventDefault()),el.drop.addEventListener("drop",async e=>{e.preventDefault();const t=e.dataTransfer,n=t.files?Array.from(t.files):[],o=[],s=[];if(t.items)for(const e of Array.from(t.items))if(!e.kind||"file"===e.kind){if(e.getAsFileSystemHandle)try{o.push(e.getAsFileSystemHandle())}catch(e){}if(e.webkitGetAsEntry)try{const t=e.webkitGetAsEntry();t&&s.push(t)}catch(e){}}let i=[],r="";if(o.length)try{for(const e of await Promise.all(o))await walkHandle(e,i,"");i.length&&(r="File System Access 句柄")}catch(e){i=[]}if(!i.length&&s.length)try{for(const e of s)await walkEntry(e,i,"");i.length&&(r="拖拽条目 API")}catch(e){i=[]}!i.length&&n.length&&(i=n.map(e=>({file:e,path:e.name})),i.length&&(r="文件快照"));const a=state.files.length;addFiles(i);const l=state.files.length-a;if(l>0)log("已加入 "+l+" 个 Scratch 文件（来源："+r+"）","ok"),banner("");else if(n.length||s.length||o.length){banner(n.length>0&&n.every(e=>!/\.(sb3|sb2)$/i.test(e.name))?"浏览器没能读取拖进来的文件夹内容（浏览器限制）。请改用上面的「选择文件夹」按钮 —— 那个一定能读到全部文件。":"没有发现 .sb3 / .sb2 文件 —— 文件夹里可能没有 Scratch 作品。"),log("拖拽未加入任何文件（已尝试："+(o.length?"句柄/":"")+(s.length?"条目/":"")+"快照）","warn")}else banner("没能读取拖拽内容，请改用上面的「选择文件 / 选择文件夹」。")}),el.clear.onclick=()=>{state.files=[],state.results=[],renderFiles(),el.res.innerHTML='<li style="border:none"><span class="nm">还没有结果</span></li>',el.zipBtn.hidden=!0,el.barIn.style.width="0%",el.log.textContent="// 日志会显示在这里",banner("")},el.run.onclick=async()=>{const e={funcs:el.opFuncs.checked,dead:el.opDead.checked,shadows:el.opShadow.checked,ext:el.opExt.checked,extNetwork:el.opExt.checked,keepTree:el.opTree.checked,suffix:el.opSuffix.checked,level:ACTIVE()?levelValue():9};if(!(e.funcs||e.dead||e.shadows||e.ext))return void banner("至少勾选一项优化。");banner("");const t=state.files.length;log("压缩方式："+(ACTIVE()?"JSZip（等级 "+e.level+"）":"浏览器内置 deflate（默认等级）"),"k"),log("输出结构："+(e.keepTree?"保留文件夹结构":"平铺到根目录"),"k"),el.run.disabled=!0,el.clear.disabled=!0,el.zipBtn.hidden=!0,state.results=[],el.res.innerHTML="";const n=performance.now();let o=0,s=0,i=0;for(const n of state.files){log("["+(o+1)+"/"+t+"] "+n.path,"hl"),el.status.textContent="正在处理 "+n.path;try{const t=await optimizeSb3(n.file,n.path,e,log);s+=t.inSize,i+=t.outSize,state.results.push(t);const o=t.inSize?Math.round(100*(1-t.outSize/t.inSize)):0;log("  完成 → "+t.name+"（"+fmt(t.outSize)+"，"+(t.inSize>=t.outSize?"省 "+o+"%":"略增")+"）","ok"),log("  函数 -"+t.stats.funcs+" ｜ 死块 -"+t.stats.dead+" ｜ 阴影值 -"+t.stats.shadows,"k")}catch(e){log("  处理失败："+e.message,"err")}o++,el.barIn.style.width=Math.round(o/t*100)+"%"}renderResults(s,i,Math.round(performance.now()-n)),el.run.disabled=!1,el.clear.disabled=!1,el.status.textContent="完成："+state.results.length+" / "+t+" 个文件"},el.zipBtn.onclick=async()=>{if(!state.results.length)return;el.zipBtn.disabled=!0,log("正在打包 "+state.results.length+" 个文件…","k");const e=new Map,t=[];for(const n of state.results){let o=n.name;if(e.has(o)){const t=e.get(o)+1;e.set(o,t);const n=o.lastIndexOf(".");o=o.slice(0,n)+" ("+t+")"+o.slice(n)}else e.set(o,0);t.push({name:o,data:new Uint8Array(await n.blob.arrayBuffer())})}const n=await zipFiles(t,ACTIVE()?levelValue():9),o=document.createElement("a");o.href=URL.createObjectURL(n),o.download="Scratch优化结果.zip",o.click(),log("打包完成 → Scratch优化结果.zip（"+fmt(n.size)+"）","ok"),el.zipBtn.disabled=!1};const JSZIP_CDNS=["https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js","https://unpkg.com/jszip@3.10.1/dist/jszip.min.js","https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"];function loadScript(e,t=7e3){return new Promise((n,o)=>{const s=document.createElement("script");s.src=e,s.async=!0;const i=setTimeout(()=>{s.remove(),o(new Error("timeout"))},t);s.onload=()=>{clearTimeout(i),n()},s.onerror=()=>{clearTimeout(i),s.remove(),o(new Error("error"))},document.head.appendChild(s)})}async function ensureJSZip(){if("undefined"!=typeof JSZip)return!0;for(const e of JSZIP_CDNS)try{if(await loadScript(e),"undefined"!=typeof JSZip)return!0}catch(e){}return!1}!async function(){document.documentElement.setAttribute("theme",systemTheme());let e=null;try{e=localStorage.getItem("sb3-theme")}catch(e){}applyTheme(e||systemTheme()),window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",e=>{let t=null;try{t=localStorage.getItem("sb3-theme")}catch(e){}t||applyTheme(e.matches?"dark":"light")}),el.dataPill.textContent="内置积木数据："+HAT_OPCODES.size+" 帽子 / "+ALL_OPCODES.size+" 已知积木 / "+KNOWN_PREFIXES.size+" 前缀",renderFiles();let t=!0;try{new CompressionStream("deflate-raw"),new DecompressionStream("deflate-raw")}catch(e){t=!1}t||banner('当前浏览器不支持 CompressionStream("deflate-raw")，无法读写 .sb3，请用较新的 Chrome / Edge / Firefox。'),el.level.disabled=!0;const n=await ensureJSZip();state.hasJSZip=n,el.level.disabled=!n,n?(el.zipNote.textContent="已加载 JSZip，可自由调节压缩等级（0 = 仅存储，9 = 最大压缩）。",log("JSZip 已就绪（CDN），压缩等级可控。","ok")):(el.zipNote.textContent="网络不可用 / CDN 被拦截 → 已回退到浏览器内置 deflate（默认压缩等级）。",log("未能加载 JSZip，回退到浏览器内置压缩（默认等级）。","warn"))}()</script> </body> </html> 
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scratch 文件优化器</title>
+<style>
+  /* ===== 以下全局样式取自 TurboWarp Packager 的应用样式 ===== */
+  :root {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    background: white;
+    color: black;
+  }
+  [theme="dark"] {
+    background: #111;
+    color: #eee;
+    color-scheme: dark;
+  }
+  a { color: blue; }
+  [theme="dark"] a { color: #56b2ff; }
+  a:active { color: red; }
+  input[type="text"], input[type="number"], textarea { padding: 2px; }
+  input[type="text"], input[type="number"], textarea {
+    background-color: white; color: black;
+    border: 1px solid rgb(160, 160, 160); border-radius: 2px;
+  }
+  [theme="dark"] input[type="text"], [theme="dark"] input[type="number"], [theme="dark"] textarea {
+    background-color: #333; color: white; border-color: #888;
+  }
+  p, h1, h2, h3 { margin: 12px 0; }
+  summary { cursor: pointer; }
+  input { font-size: 0.8em; }
+
+  main { padding-bottom: 10px; }
+  footer { text-align: center; }
+  footer > div { margin-top: 12px; }
+  .disclaimer { font-style: italic; }
+  .version { font-size: small; opacity: 0.8; }
+  .version a { color: inherit; }
+
+  /* card */
+  .card {
+    max-width: 625px; margin: auto; border-radius: 0.3em; background-color: #fff;
+    padding: 1em; margin-top: 1em; margin-bottom: 1em;
+    box-shadow: 0 2px 0.5em 0.1em rgba(0, 0, 0, 0.2);
+  }
+  [theme="dark"] .card { background: #222; }
+  .caption { font-style: italic; }
+  .reset { float: right; }
+
+  /* button */
+  button.button {
+    position: relative; font-family: inherit; font-size: 14px; color: white;
+    border: none; padding: 0.5rem 1rem; margin: 0; border-radius: 4px;
+    overflow: hidden; cursor: pointer; font-weight: bold;
+  }
+  button.button .text {
+    display: flex; align-items: center; justify-content: center; position: relative; z-index: 10;
+  }
+  button.button .dimmer {
+    display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.25);
+  }
+  button.button:active .dimmer { display: block; }
+  button.button[disabled] { opacity: .5; cursor: not-allowed; }
+
+  /* 图标按钮 */
+  button.icon {
+    width: 26px; height: 26px; margin: 0; padding: 4px;
+    border: none; background: none; cursor: pointer; border-radius: 4px; line-height: 0;
+    color: inherit;                     /* button 默认不继承文字色，显式跟随主题 */
+  }
+  button.icon:hover { background: rgba(0, 0, 0, 0.15); }
+  button.icon:active { background: rgba(0, 0, 0, 0.3); }
+  [theme="dark"] button.icon:hover { background: rgba(255, 255, 255, 0.15); }
+  [theme="dark"] button.icon:active { background: rgba(255, 255, 255, 0.3); }
+  button.icon svg { width: 100%; height: 100%; }
+  /* 注意：打包器里那条 [theme="dark"] img{filter:invert(100%)} 是给「黑色 PNG 图标」用的；
+     我们的图标是 stroke=currentColor 的内联 SVG，已经自动跟随文字色，
+     再反相会在暗色下变成黑色（看不见），所以这里不加 filter。 */
+
+  /* 拖放区 */
+  .container {
+    background: transparent; color: #555; width: 100%; box-sizing: border-box;
+    border: 3px dashed currentColor; transition: .2s border-color, .2s color;
+    border-radius: 20px; min-height: 90px; font: inherit;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    overflow: hidden; position: relative; cursor: pointer; padding: 4px;
+  }
+  [theme="dark"] .container { color: #aaa; }
+  .dropping, .container:focus-visible, .container:active { color: rgb(79, 123, 211); }
+  [theme="dark"] .dropping, [theme="dark"] .container:focus-visible, [theme="dark"] .container:active {
+    color: rgb(178, 195, 228);
+  }
+  .placeholder { font-size: 1.5em; }
+  .selected { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .selected > *:not(:last-child) { margin-right: 12px; }
+
+  /* 选项 */
+  .options { margin: 12px 0; }
+  .option { min-height: 25px; display: flex; align-items: center; flex-wrap: wrap; margin: 4px 0; }
+  .option input[type="checkbox"] { margin-right: 6px; }
+  .group { margin: 12px 0; }
+  .group:last-child, .option:last-child, p:last-child { margin-bottom: 0; }
+  .buttons { display: flex; flex-wrap: wrap; }
+  .button + .button { margin-left: 4px; }
+  .side-buttons { display: flex; margin-left: auto; }
+  .warning { font-weight: bold; background: yellow; color: black; padding: 10px; border-radius: 10px; }
+  .alternative { font-size: smaller; }
+
+  /* 进度 */
+  .progress { display: flex; align-items: center; flex-direction: column; }
+  .bar-outer { width: 200px; height: 10px; border: 1px solid currentColor; margin-bottom: 4px; background: black; }
+  [theme="dark"] .bar-outer { background: transparent; }
+  .bar-inner { height: 100%; width: 0; background: white; }
+  .progress .text { font-style: italic; }
+
+  .badge { background-color: #b117f8; border-bottom: 2px solid #6f0073; color: white; padding: 2px 5px; border-radius: 4px; }
+
+  header { max-width: 625px; margin: 1em auto 0; display: flex; align-items: center; gap: 8px; }
+  header h1 { flex: 1; font-size: 1.6em; }
+  header .icon { flex: 0 0 auto; }
+
+  /* 已选文件列表（沿用打包器 200px 输入框的朴素风格） */
+  ul.list { list-style: none; margin: 12px 0 0; padding: 0; max-height: 190px; overflow: auto; }
+  ul.list li {
+    display: flex; align-items: center; gap: 8px; padding: 3px 6px;
+    border: 1px solid rgb(160, 160, 160); border-radius: 2px; margin-bottom: 4px; font-size: 0.9em;
+  }
+  [theme="dark"] ul.list li { border-color: #888; }
+  ul.list .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  ul.list .sz { font-size: 0.85em; opacity: .7; }
+  ul.list button { border: none; background: none; cursor: pointer; font-size: 1em; color: inherit; }
+
+  /* 结果 */
+  ul.result { list-style: none; margin: 12px 0 0; padding: 0; }
+  ul.result li { display: flex; align-items: center; gap: 10px; padding: 4px 6px; border: 1px solid rgb(160,160,160); border-radius: 2px; margin-bottom: 4px; }
+  [theme="dark"] ul.result li { border-color: #888; }
+  ul.result .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  ul.result .nm small { display: block; opacity: .7; font-size: .82em; }
+  ul.result a { font-size: 0.9em; }
+
+  /* 控制台 */
+  pre#log {
+    font-family: monospace; font-size: 13px; line-height: 1.5; white-space: pre-wrap; word-break: break-all;
+    height: 240px; overflow: auto; margin: 0; padding: 6px;
+    background: #f4f4f4; border: 1px solid rgb(160, 160, 160); border-radius: 2px;
+  }
+  [theme="dark"] pre#log { background: #1a1a1a; border-color: #888; }
+  #log .hl { font-weight: bold; }
+  #log .ok { color: #0a7a49; }
+  #log .warn { color: #a86a00; }
+  #log .err { color: #c00; }
+  [theme="dark"] #log .ok { color: #57d99a; }
+  [theme="dark"] #log .warn { color: #ffc247; }
+  [theme="dark"] #log .err { color: #ff8080; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Scratch 文件优化器 <span class="badge">网页版</span></h1>
+  <button class="icon" id="themeBtn" title="切换浅色 / 深色主题"></button>
+</header>
+
+<main>
+
+  <!-- ① 选择输入 -->
+  <div class="card" style="border-top:6px solid #FFAB19">
+    <h2>选择输入</h2>
+    <div class="container" id="drop" tabindex="0">
+      <div id="dropInner">
+        <div class="placeholder">把 .sb3 或整个文件夹拖到这里</div>
+        <p class="alternative">只会挑出文件夹里的 Scratch 文件（<code>.sb3</code> / <code>.sb2</code>），其它文件自动忽略</p>
+      </div>
+      <input type="file" id="pick" multiple accept=".sb3,.sb2" hidden>
+      <input type="file" id="pickDir" webkitdirectory multiple hidden>
+    </div>
+    <div class="buttons" style="margin-top:12px">
+      <button class="button" id="pickBtn" style="background:#4C97FF"><span class="text">选择文件</span><span class="dimmer"></span></button>
+      <button class="button" id="pickDirBtn" style="background:#4C97FF"><span class="text">选择文件夹</span><span class="dimmer"></span></button>
+      <div class="side-buttons">
+        <button class="button" id="clear" style="background:#FF8C1A"><span class="text">清空</span><span class="dimmer"></span></button>
+      </div>
+    </div>
+    <div id="banner" class="warning" hidden></div>
+    <ul class="list" id="files"></ul>
+    <p class="caption" id="cntHint">还没有选择文件</p>
+  </div>
+
+  <!-- ② 优化选项 -->
+  <div class="card" style="border-top:6px solid #9966FF">
+    <h2>优化选项</h2>
+    <div class="options">
+      <div class="option"><input type="checkbox" id="opFuncs" checked><label for="opFuncs">移除未使用的自定义积木（从事件入口做可达性分析）</label></div>
+      <div class="option"><input type="checkbox" id="opDead" checked><label for="opDead">清理孤儿 / 死积木（顶层非帽子块、parent 断链块及其子树）</label></div>
+      <div class="option"><input type="checkbox" id="opShadow" checked><label for="opShadow">清理阴影值（被积木覆盖掉的默认输入值）</label></div>
+      <div class="option"><input type="checkbox" id="opExt" checked><label for="opExt">分析第三方扩展（<code>data:</code> 内嵌始终解析；联网下载受 CORS 限制）</label></div>
+    </div>
+    <div class="group">
+      <div class="option"><input type="checkbox" id="opTree" checked><label for="opTree">保留文件夹结构（.zip 内按相对路径存放，不会多套一层 <code>optimized_output</code>）</label></div>
+      <div class="option"><input type="checkbox" id="opSuffix"><label for="opSuffix">输出文件名加 <code>_cleaned</code></label></div>
+      <div class="option">
+        <label for="level">压缩等级</label>
+        <input type="number" id="level" min="0" max="9" step="1" inputmode="numeric"
+               value="9" title="只能填 0 ~ 9 的整数" style="margin-left:4px">
+        <span class="alternative" id="zipNote" style="margin-left:8px">正在尝试加载 JSZip…</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 打包 -->
+  <div class="card" style="border-top:6px solid #4CBFE6">
+    <h2>打包</h2>
+    <button class="button" id="run" disabled style="background:#ff4c4c;font-size:16px;padding:0.6rem 1.4rem">
+      <span class="text">开始优化</span><span class="dimmer"></span>
+    </button>
+    <button class="button" id="zipBtn" hidden style="background:#0FBD8C">
+      <span class="text">打包下载全部 (.zip)</span><span class="dimmer"></span>
+    </button>
+    <div class="progress" style="margin-top:12px">
+      <div class="bar-outer"><div class="bar-inner" id="barIn"></div></div>
+      <div class="text" id="status">等待选择文件…</div>
+    </div>
+    <p class="alternative">多文件会打进同一个 .zip；未勾选“保留文件夹结构”时全部平铺。</p>
+  </div>
+
+  <!-- ④ 结果 -->
+  <div class="card" style="border-top:6px solid #FF8C1A">
+    <h2>结果</h2>
+    <ul class="result" id="res"><li style="border:none"><span class="nm">还没有结果</span></li></ul>
+  </div>
+
+  <!-- ⑤ 控制台 -->
+  <div class="card" style="border-top:6px solid #FF6680">
+    <h2>控制台</h2>
+    <pre id="log">// 日志会显示在这里</pre>
+  </div>
+
+</main>
+
+<footer>
+  <div class="version" id="dataPill">积木数据加载中…</div>
+  <div class="disclaimer">全部处理都在本机浏览器完成，文件不会上传；仅“分析第三方扩展”会在你允许时下载扩展源码。</div>
+  <div class="version">界面风格参照 <a href="https://packager.turbowarp.org/" target="_blank" rel="noreferrer">TurboWarp Packager</a></div>
+</footer>
+
+<script>
+/*CORE_START*/
+/* ============================================================================
+   一、内置积木数据（与 Python 版一致）
+   ========================================================================== */
+const HAT_OPCODES = new Set(["boost_whenColor", "boost_whenTilted", "control_start_as_clone", "ev3_whenBrightnessLessThan", "ev3_whenButtonPressed", "ev3_whenDistanceLessThan", "event_whenbackdropswitchesto", "event_whenbroadcastreceived", "event_whenflagclicked", "event_whengreaterthan", "event_whenkeypressed", "event_whenstageclicked", "event_whenthisspriteclicked", "event_whentouchingobject", "faceSensing_whenFaceDetected", "faceSensing_whenSpriteTouchesPart", "faceSensing_whenTilted", "gdxfor_whenForcePushedOrPulled", "gdxfor_whenGesture", "gdxfor_whenTilted", "makeymakey_whenCodePressed", "makeymakey_whenMakeyKeyPressed", "microbit_whenButtonPressed", "microbit_whenGesture", "microbit_whenPinConnected", "microbit_whenTilted", "procedures_definition", "speech2text_whenIHearHat", "videoSensing_whenMotionGreaterThan", "wedo2_whenDistance", "wedo2_whenTilted"]);
+const ALL_OPCODES = new Set(["argument_editor_boolean", "argument_editor_string_number", "argument_reporter_boolean", "argument_reporter_string_number", "boost_getMotorPosition", "boost_getTiltAngle", "boost_menu_COLOR", "boost_menu_MOTOR_DIRECTION", "boost_menu_MOTOR_ID", "boost_menu_MOTOR_REPORTER_ID", "boost_menu_TILT_DIRECTION", "boost_menu_TILT_DIRECTION_ANY", "boost_motorOff", "boost_motorOn", "boost_motorOnFor", "boost_motorOnForRotation", "boost_seeingColor", "boost_setLightHue", "boost_setMotorDirection", "boost_setMotorPower", "boost_whenColor", "boost_whenTilted", "control_all_at_once", "control_clear_counter", "control_create_clone_of", "control_create_clone_of_menu", "control_delete_this_clone", "control_for_each", "control_forever", "control_get_counter", "control_if", "control_if_else", "control_incr_counter", "control_repeat", "control_repeat_until", "control_stop", "control_wait", "control_wait_until", "control_while", "data_addtolist", "data_changevariableby", "data_deletealloflist", "data_deleteoflist", "data_hidelist", "data_hidevariable", "data_insertatlist", "data_itemnumoflist", "data_itemoflist", "data_lengthoflist", "data_listcontainsitem", "data_listcontents", "data_listindexall", "data_listindexrandom", "data_replaceitemoflist", "data_setvariableto", "data_showlist", "data_showvariable", "data_variable", "ev3_beep", "ev3_buttonPressed", "ev3_getBrightness", "ev3_getDistance", "ev3_getMotorPosition", "ev3_menu_motorPorts", "ev3_menu_sensorPorts", "ev3_motorSetPower", "ev3_motorTurnClockwise", "ev3_motorTurnCounterClockwise", "ev3_whenBrightnessLessThan", "ev3_whenButtonPressed", "ev3_whenDistanceLessThan", "event_broadcast", "event_broadcast_menu", "event_broadcastandwait", "event_touchingobjectmenu", "event_whengreaterthan", "event_whentouchingobject", "faceSensing_faceIsDetected", "faceSensing_faceSize", "faceSensing_faceTilt", "faceSensing_goToPart", "faceSensing_pointInFaceTiltDirection", "faceSensing_setSizeToFaceSize", "faceSensing_whenFaceDetected", "faceSensing_whenSpriteTouchesPart", "faceSensing_whenTilted", "gdxfor_getAcceleration", "gdxfor_getForce", "gdxfor_getSpinSpeed", "gdxfor_getTilt", "gdxfor_isFreeFalling", "gdxfor_isTilted", "gdxfor_menu_axisOptions", "gdxfor_menu_gestureOptions", "gdxfor_menu_pushPullOptions", "gdxfor_menu_tiltAnyOptions", "gdxfor_menu_tiltOptions", "gdxfor_whenForcePushedOrPulled", "gdxfor_whenGesture", "gdxfor_whenTilted", "looks_backdropnumbername", "looks_backdrops", "looks_changeeffectby", "looks_changesizeby", "looks_changestretchby", "looks_cleargraphiceffects", "looks_costume", "looks_costumenumbername", "looks_goforwardbackwardlayers", "looks_gotofrontback", "looks_hide", "looks_hideallsprites", "looks_nextbackdrop", "looks_nextcostume", "looks_say", "looks_sayforsecs", "looks_seteffectto", "looks_setsizeto", "looks_setstretchto", "looks_show", "looks_size", "looks_switchbackdropto", "looks_switchbackdroptoandwait", "looks_switchcostumeto", "looks_think", "looks_thinkforsecs", "makeymakey_menu_KEY", "makeymakey_menu_SEQUENCE", "makeymakey_whenCodePressed", "makeymakey_whenMakeyKeyPressed", "matrix", "microbit_displayClear", "microbit_displaySymbol", "microbit_displayText", "microbit_getTiltAngle", "microbit_isButtonPressed", "microbit_isTilted", "microbit_menu_buttons", "microbit_menu_gestures", "microbit_menu_pinState", "microbit_menu_tiltDirection", "microbit_menu_tiltDirectionAny", "microbit_menu_touchPins", "microbit_whenButtonPressed", "microbit_whenGesture", "microbit_whenPinConnected", "microbit_whenTilted", "motion_align_scene", "motion_changexby", "motion_changeyby", "motion_direction", "motion_glidesecstoxy", "motion_glideto", "motion_glideto_menu", "motion_goto", "motion_goto_menu", "motion_gotoxy", "motion_ifonedgebounce", "motion_movesteps", "motion_pointindirection", "motion_pointtowards", "motion_pointtowards_menu", "motion_scroll_right", "motion_scroll_up", "motion_setrotationstyle", "motion_setx", "motion_sety", "motion_turnleft", "motion_turnright", "motion_xposition", "motion_xscroll", "motion_yposition", "motion_yscroll", "music_changeTempo", "music_getTempo", "music_menu_DRUM", "music_menu_INSTRUMENT", "music_midiPlayDrumForBeats", "music_midiSetInstrument", "music_playDrumForBeats", "music_playNoteForBeats", "music_restForBeats", "music_setInstrument", "music_setTempo", "note", "operator_add", "operator_and", "operator_contains", "operator_divide", "operator_equals", "operator_gt", "operator_join", "operator_length", "operator_letter_of", "operator_lt", "operator_mathop", "operator_mod", "operator_multiply", "operator_not", "operator_or", "operator_random", "operator_round", "operator_subtract", "pen_changePenColorParamBy", "pen_changePenHueBy", "pen_changePenShadeBy", "pen_changePenSizeBy", "pen_clear", "pen_menu_colorParam", "pen_penDown", "pen_penUp", "pen_setPenColorParamTo", "pen_setPenColorToColor", "pen_setPenHueToNumber", "pen_setPenShadeToNumber", "pen_setPenSizeTo", "pen_stamp", "procedures_call", "procedures_declaration", "procedures_definition", "procedures_prototype", "sensing_answer", "sensing_askandwait", "sensing_coloristouchingcolor", "sensing_current", "sensing_dayssince2000", "sensing_distanceto", "sensing_distancetomenu", "sensing_keyoptions", "sensing_keypressed", "sensing_loud", "sensing_loudness", "sensing_mousedown", "sensing_mousex", "sensing_mousey", "sensing_of", "sensing_of_object_menu", "sensing_online", "sensing_resettimer", "sensing_setdragmode", "sensing_timer", "sensing_touchingcolor", "sensing_touchingobject", "sensing_touchingobjectmenu", "sensing_userid", "sensing_username", "sound_beats_menu", "sound_changeeffectby", "sound_changevolumeby", "sound_cleareffects", "sound_effects_menu", "sound_play", "sound_playuntildone", "sound_seteffectto", "sound_setvolumeto", "sound_sounds_menu", "sound_stopallsounds", "sound_volume", "speech2text_getSpeech", "speech2text_listenAndWait", "speech2text_whenIHearHat", "text2speech_menu_languages", "text2speech_menu_voices", "text2speech_setLanguage", "text2speech_setVoice", "text2speech_speakAndWait", "translate_getTranslate", "translate_getViewerLanguage", "translate_menu_languages", "tw_getButtonIsDown", "tw_getLastKeyPressed", "videoSensing_menu_ATTRIBUTE", "videoSensing_menu_SUBJECT", "videoSensing_menu_VIDEO_STATE", "videoSensing_setVideoTransparency", "videoSensing_videoOn", "videoSensing_videoToggle", "videoSensing_whenMotionGreaterThan", "wedo2_getDistance", "wedo2_getTiltAngle", "wedo2_isTilted", "wedo2_menu_MOTOR_DIRECTION", "wedo2_menu_MOTOR_ID", "wedo2_menu_OP", "wedo2_menu_TILT_DIRECTION", "wedo2_menu_TILT_DIRECTION_ANY", "wedo2_motorOff", "wedo2_motorOn", "wedo2_motorOnFor", "wedo2_playNoteFor", "wedo2_setLightHue", "wedo2_setMotorDirection", "wedo2_startMotorPower", "wedo2_whenDistance", "wedo2_whenTilted"]);
+const KNOWN_PREFIXES = new Set(["argument", "boost", "control", "data", "ev3", "event", "faceSensing", "gdxfor", "looks", "makeymakey", "matrix", "microbit", "motion", "music", "note", "operator", "pen", "procedures", "sensing", "sound", "speech2text", "text2speech", "translate", "tw", "videoSensing", "wedo2"]);
+
+const SCRIPT_STARTER_TYPES = new Set(['hat', 'event']);     // TurboWarp: hat / event 都可启动脚本
+const NUMERIC_PRIMITIVES = new Set([4, 5, 6, 7, 8, 9, 10]); // 数字/正数/整数/角度/颜色/文本
+
+const opcodePrefix = op => (typeof op === 'string' ? op.split('_')[0] : '');
+const isHatOpcode  = op => typeof op === 'string' && HAT_OPCODES.has(op);
+const isHatBlock   = b  => !!b && typeof b === 'object' && isHatOpcode(b.opcode);
+/** 是否“确定不是帽子块”（不知道的一律当作可能是帽子 → 保守保护） */
+function isKnownNonHat(op) {
+  if (typeof op !== 'string' || HAT_OPCODES.has(op)) return false;
+  return ALL_OPCODES.has(op);
+}
+
+/* project.json 里有些积木是“挤压形式”的数组：[类型, ...]，没有 opcode 字段。
+   4~10 = 字面量(math_number / text / colour_picker …)
+   11 = event_broadcast_menu  12 = data_variable  13 = data_listcontents
+   它们全是 reporter/菜单，绝不可能是帽子 → 可以安全地当“已知非帽子”。 */
+const COMPRESSED_BLOCK_TYPES = new Set([4, 5, 6, 7, 8, 9, 10, 11, 12, 13]);
+
+/** 同上，但同时支持 字典形式 与 挤压数组形式 */
+function isKnownNonHatBlock(b) {
+  if (Array.isArray(b)) return COMPRESSED_BLOCK_TYPES.has(b[0]);
+  if (b && typeof b === 'object') return isKnownNonHat(b.opcode);
+  return false;
+}
+
+/* ============================================================================
+   二、三种清理
+   ========================================================================== */
+
+/** 清理阴影值：把 [3, 子块, [数值, 值]] 里被覆盖的默认数值清空 */
+function cleanAllShadowValues(project) {
+  let n = 0;
+  for (const t of project.targets || []) {
+    const blocks = t && t.blocks;
+    if (!blocks || typeof blocks !== 'object') continue;
+    for (const b of Object.values(blocks)) {
+      if (!b || typeof b !== 'object') continue;
+      for (const inp of Object.values(b.inputs || {})) {
+        if (!Array.isArray(inp) || inp.length < 3) continue;
+        if (inp[0] !== 3) continue;                              // 只有 3 段式输入才带被覆盖的阴影
+        if (!Array.isArray(inp[2]) || inp[2].length !== 2) continue;
+        const [ptype, pval] = inp[2];
+        if (NUMERIC_PRIMITIVES.has(ptype) && pval !== '') { inp[2][1] = ''; n++; }
+      }
+    }
+  }
+  return n;
+}
+
+/** 逐目标独立地构建自定义积木调用关系图 */
+function buildCallGraph(project) {
+  const definitions = new Map();                 // "idx\u0000proccode" -> [defId, protoId]
+  const edges = new Map();                       // key -> Set(key)
+  const entry = new Set();
+
+  (project.targets || []).forEach((target, ti) => {
+    if (!target || typeof target !== 'object') return;
+    const blocks = target.blocks;
+    if (!blocks || typeof blocks !== 'object') return;
+    const key = (idx, proccode) => idx + '\u0000' + proccode;
+    const protoOf = defBlock => {
+      const ref = (defBlock.inputs || {}).custom_block;
+      const pid = Array.isArray(ref) && ref.length > 1 ? ref[1] : null;
+      const pb = pid && blocks[pid];
+      return pb && typeof pb === 'object' ? (pb.mutation || {}).proccode || '' : '';
+    };
+
+    for (const [bid, b] of Object.entries(blocks)) {
+      if (!b || typeof b !== 'object' || b.opcode !== 'procedures_definition') continue;
+      const pc = protoOf(b);
+      const ref = (b.inputs || {}).custom_block;
+      const pid = Array.isArray(ref) && ref.length > 1 ? ref[1] : null;
+      if (pc && pid) definitions.set(key(ti, pc), [bid, pid]);
+    }
+    for (const b of Object.values(blocks)) {
+      if (!b || typeof b !== 'object' || b.opcode !== 'procedures_call') continue;
+      const callee = (b.mutation || {}).proccode || '';
+      if (!callee) continue;
+      let caller = null, cur = b.parent, seen = new Set();
+      while (cur && typeof cur === 'string' && !seen.has(cur)) {
+        seen.add(cur);
+        const pb = blocks[cur];
+        if (!pb || typeof pb !== 'object') break;
+        if (pb.opcode === 'procedures_definition') { caller = protoOf(pb); break; }
+        cur = pb.parent;
+      }
+      if (caller) {
+        const k = key(ti, caller);
+        if (!edges.has(k)) edges.set(k, new Set());
+        edges.get(k).add(key(ti, callee));
+      } else {
+        entry.add(key(ti, callee));
+      }
+    }
+  });
+  return { definitions, edges, entry };
+}
+
+function cleanUnusedProcedures(project) {
+  const { definitions, edges, entry } = buildCallGraph(project);
+  if (!definitions.size) return { removed: 0, names: [] };
+
+  const reachable = new Set();
+  const queue = [...entry];
+  while (queue.length) {
+    const node = queue.shift();
+    if (reachable.has(node)) continue;
+    reachable.add(node);
+    for (const nb of (edges.get(node) || [])) if (!reachable.has(nb)) queue.push(nb);
+  }
+
+  const unused = [...definitions.keys()].filter(k => !reachable.has(k)).sort();
+  if (!unused.length) return { removed: 0, names: [] };
+
+  const names = [];
+  for (const k of unused) {
+    const parts = k.split('\u0000');
+    const ti = Number(parts[0]);
+    const proccode = parts[1];
+    const [defId, protoId] = definitions.get(k);
+    const target = project.targets[ti];
+    const blocks = target && target.blocks;
+    if (!blocks) continue;
+    removeProcedureBlocks(blocks, defId, protoId);
+    names.push((target.name || '目标' + ti) + ' → ' + proccode);
+  }
+  return { removed: unused.length, names };
+}
+
+/** 删掉一个自定义积木的所有相关块（定义、原型、参数、函数体） */
+function removeProcedureBlocks(blocks, defId, protoId) {
+  const del = new Set([defId, protoId]);
+  const def = blocks[defId];
+  if (def && typeof def === 'object') {
+    for (const v of Object.values(def.inputs || {})) {
+      if (Array.isArray(v) && v.length > 1 && typeof v[1] === 'string') del.add(v[1]);
+    }
+  }
+  const stack = [...del];
+  while (stack.length) {
+    const bid = stack.pop();
+    const b = blocks[bid];
+    if (!b || typeof b !== 'object') continue;
+    if (typeof b.next === 'string' && blocks[b.next] && !del.has(b.next)) { del.add(b.next); stack.push(b.next); }
+    for (const v of Object.values(b.inputs || {})) {
+      if (Array.isArray(v) && v.length > 1 && typeof v[1] === 'string' && blocks[v[1]] && !del.has(v[1])) {
+        del.add(v[1]); stack.push(v[1]);
+      }
+    }
+  }
+  for (const id of del) delete blocks[id];
+  return del.size;
+}
+
+/** 从若干起点沿 next + inputs 收集可达块 */
+function collectReachable(blocks, starts) {
+  const seen = new Set();
+  const stack = [...starts];
+  while (stack.length) {
+    const bid = stack.pop();
+    if (typeof bid !== 'string' || seen.has(bid)) continue;
+    const b = blocks[bid];
+    if (!b || typeof b !== 'object') continue;
+    seen.add(bid);
+    if (typeof b.next === 'string') stack.push(b.next);
+    for (const v of Object.values(b.inputs || {})) {
+      if (Array.isArray(v)) for (const it of v) if (typeof it === 'string' && blocks[it]) stack.push(it);
+    }
+  }
+  return seen;
+}
+
+/** 找“死块 / 孤儿块”：顶层非帽子块 + parent 断链块（含其子树） */
+function findDeadBlocks(blocks) {
+  if (!blocks || typeof blocks !== 'object') return new Set();
+  const roots = [];
+  for (const [bid, b] of Object.entries(blocks)) {
+    if (!b || typeof b !== 'object') continue;
+    const p = b.parent;
+    if (p == null || !blocks[p]) roots.push(bid);
+  }
+  const live = roots.filter(bid => !isKnownNonHatBlock(blocks[bid]));
+  const reachable = collectReachable(blocks, live);
+  const dead = new Set();
+  for (const bid of Object.keys(blocks)) if (!reachable.has(bid)) dead.add(bid);
+  return dead;
+}
+
+function cleanDeadBlocks(project) {
+  let removed = 0;
+  for (const t of project.targets || []) {
+    if (!t || typeof t !== 'object') continue;
+    const blocks = t.blocks;
+    if (!blocks || typeof blocks !== 'object' || !Object.keys(blocks).length) continue;
+    const dead = findDeadBlocks(blocks);
+    if (!dead.size) continue;
+    for (const id of dead) delete blocks[id];
+    removed += dead.size;
+    const comments = t.comments;
+    if (comments && typeof comments === 'object') {
+      for (const [cid, cm] of Object.entries(comments)) {
+        if (cm && typeof cm === 'object' && dead.has(cm.blockId)) delete comments[cid];
+      }
+    }
+  }
+  return removed;
+}
+
+/* ============================================================================
+   三、第三方扩展：拿源码 → 静态解析（绝不执行）
+   ========================================================================== */
+
+function collectExtensionUrls(project) {
+  const out = new Map();
+  const holders = [project, ...(project.targets || []).filter(t => t && typeof t === 'object')];
+  for (const h of holders) {
+    const eu = h.extensionURLs;
+    if (eu && typeof eu === 'object') {
+      for (const [id, url] of Object.entries(eu)) {
+        if (typeof id === 'string' && typeof url === 'string' && !out.has(id)) out.set(id, url);
+      }
+    }
+  }
+  return out;
+}
+
+function decodeDataUrl(url) {
+  try {
+    const comma = url.indexOf(',');
+    const header = url.slice(5, comma).toLowerCase();
+    const payload = url.slice(comma + 1);
+    if (header.includes(';base64')) {
+      const bin = atob(payload.replace(/\s+/g, ''));
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return new TextDecoder('utf-8').decode(bytes);
+    }
+    return decodeURIComponent(payload);
+  } catch (e) { return null; }
+}
+
+/** 解出被 base64 打包进 JS 的真实源码（如 ccw2tw 之类打包器），递归限深 3 */
+function decodeEmbeddedSources(js, depth = 0) {
+  if (depth >= 3) return [];
+  const found = [];
+  const re = /['"]([A-Za-z0-9+/=\s]{150,})['"]/g;
+  let m;
+  while ((m = re.exec(js))) {
+    const blob = m[1].replace(/\s+/g, '');
+    if (blob.length < 150) continue;
+    let text;
+    try {
+      const bin = atob(blob + '='.repeat((-blob.length) % 4));
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    } catch (e) { continue; }
+    if (text.includes('opcode') || text.includes('blockType') || text.includes('getInfo')) {
+      found.push(text);
+      found.push(...decodeEmbeddedSources(text, depth + 1));
+    }
+  }
+  return found;
+}
+
+/** 静态扫 JS：定位每个 opcode，在它所在块对象内找 blockType */
+function extractBlockTypes(js) {
+  const out = [];
+  const re = /opcode\s*:\s*['"]([A-Za-z0-9_]+)['"]/g;
+  let m;
+  while ((m = re.exec(js))) {
+    const base = m.index + m[0].length;
+    let i = base, depth = 0, blockType = null;
+    const n = js.length;
+    while (i < n && i - base < 8000) {
+      const ch = js[i];
+      if (ch === '{') { depth++; i++; }
+      else if (ch === '}') { if (depth === 0) break; depth--; i++; }
+      else if (ch === '"' || ch === "'" || ch === '`') {
+        const q = ch; i++;
+        while (i < n && js[i] !== q) { if (js[i] === '\\') i++; i++; }
+        i++;
+      } else if (depth === 0 && js.startsWith('blockType', i)) {
+        const bm = /^blockType\s*:\s*(?:"([^"]*)"|'([^']*)'|([A-Za-z0-9_$.]+))/.exec(js.slice(i, i + 160));
+        if (bm) {
+          const tok = bm[1] || bm[2] || bm[3] || '';
+          blockType = tok.split('.').pop().replace(/["']/g, '').toLowerCase();
+          break;
+        }
+        i++;
+      } else i++;
+    }
+    out.push([m[1], blockType]);
+  }
+  return out;
+}
+
+/** 分析项目里用到的第三方扩展，把结果并入全局表；返回统计 */
+async function analyzeProjectExtensions(project, allowNetwork, log) {
+  const urls = collectExtensionUrls(project);
+  let newHats = 0, newBlocks = 0;
+  const failed = [];
+
+  for (const extId of [...urls.keys()].sort()) {
+    const url = urls.get(extId);
+    const isData = url.startsWith('data:');
+    if (!isData && !allowNetwork) continue;
+
+    let source = null;
+    if (isData) {
+      log('  分析扩展 [' + extId + ']（内嵌 data: 源码）…', 'k');
+      source = decodeDataUrl(url);
+    } else {
+      log('  分析扩展 [' + extId + ']（联网下载）…', 'k');
+      try {
+        const r = await fetch(url, { redirect: 'follow' });
+        if (r.ok) source = await r.text();
+        else log('   · 下载失败 HTTP ' + r.status, 'err');
+      } catch (e) {
+        log('   · 下载被拦截（浏览器 CORS / 网络）：' + e.message, 'warn');
+      }
+    }
+    if (!source) { failed.push(extId); continue; }
+
+    const embedded = decodeEmbeddedSources(source);
+    if (embedded.length) log('   · 解出 ' + embedded.length + ' 个内嵌打包片段', 'k');
+
+    const ops = new Set(), hats = new Set();
+    for (const src of [source, ...embedded]) {
+      for (const [op, bt] of extractBlockTypes(src)) {
+        ops.add(op);
+        if (bt && SCRIPT_STARTER_TYPES.has(bt)) hats.add(op);
+      }
+    }
+    if (!ops.size) { failed.push(extId); continue; }
+
+    for (const op of ops) { const f = extId + '_' + op; if (!ALL_OPCODES.has(f)) { ALL_OPCODES.add(f); newBlocks++; } }
+    for (const op of hats) { const f = extId + '_' + op; if (!HAT_OPCODES.has(f)) { HAT_OPCODES.add(f); newHats++; } }
+    KNOWN_PREFIXES.add(extId);
+    log('   · 解析出 ' + ops.size + ' 个积木 / ' + hats.size + ' 个帽子', 'ok');
+  }
+  return { newHats, newBlocks, failed };
+}
+
+/** 诊断：项目里用到、但当前积木表仍未覆盖的扩展前缀 */
+function diagnoseExtensions(project) {
+  const cands = new Set();
+  const declared = project.extensions;
+  if (Array.isArray(declared)) for (const x of declared) if (typeof x === 'string') cands.add(x);
+  for (const t of project.targets || []) {
+    const blocks = t && t.blocks;
+    if (!blocks || typeof blocks !== 'object') continue;
+    for (const b of Object.values(blocks)) {
+      if (b && typeof b === 'object') cands.add(opcodePrefix(b.opcode));
+    }
+  }
+  return [...cands].filter(p => p && !KNOWN_PREFIXES.has(p)).sort();
+}
+
+/* ============================================================================
+   四、ZIP：优先用 JSZip（可设压缩等级），连不上则用浏览器内置 deflate
+   ========================================================================== */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+function crc32(u8) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+async function inflateRaw(bytes) {
+  const s = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(s).arrayBuffer());
+}
+async function deflateRaw(bytes) {
+  const s = new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(s).arrayBuffer());
+}
+
+/** 读 zip（零依赖，DecompressionStream）→ [{name, data}] */
+async function unzip(input) {
+  const arrayBuffer = ArrayBuffer.isView(input)
+    ? input.buffer.slice(input.byteOffset, input.byteOffset + input.byteLength)
+    : input;
+  const u8 = new Uint8Array(arrayBuffer);
+  const dv = new DataView(arrayBuffer);
+  let eocd = -1;
+  for (let i = u8.length - 22; i >= Math.max(0, u8.length - 22 - 65535); i--) {
+    if (dv.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error('不是有效的 zip / sb3 文件');
+  const count = dv.getUint16(eocd + 10, true);
+  let off = dv.getUint32(eocd + 16, true);
+  const dec = new TextDecoder('utf-8');
+  const out = [];
+  for (let n = 0; n < count; n++) {
+    if (off + 46 > u8.length || dv.getUint32(off, true) !== 0x02014b50) throw new Error('zip 中央目录损坏');
+    const method = dv.getUint16(off + 10, true);
+    const csize = dv.getUint32(off + 20, true);
+    const nameLen = dv.getUint16(off + 28, true);
+    const extraLen = dv.getUint16(off + 30, true);
+    const commentLen = dv.getUint16(off + 32, true);
+    const localOff = dv.getUint32(off + 42, true);
+    const name = dec.decode(u8.subarray(off + 46, off + 46 + nameLen));
+    off += 46 + nameLen + extraLen + commentLen;
+    if (name.endsWith('/')) continue;
+    if (dv.getUint32(localOff, true) !== 0x04034b50) throw new Error('zip 本地头损坏');
+    const lNameLen = dv.getUint16(localOff + 26, true);
+    const lExtraLen = dv.getUint16(localOff + 28, true);
+    const start = localOff + 30 + lNameLen + lExtraLen;
+    const raw = u8.subarray(start, start + csize);
+    const data = method === 0 ? raw.slice() : await inflateRaw(raw);
+    out.push({ name, data });
+  }
+  return out;
+}
+
+/** 写 zip：有 JSZip 用 JSZip（可指定 level），否则用浏览器内置 deflate（默认等级） */
+async function zipFiles(files, level = 9) {
+  if (typeof JSZip !== 'undefined') {
+    const z = new JSZip();
+    for (const f of files) z.file(f.name, f.data instanceof Uint8Array ? f.data : new Uint8Array(f.data));
+    return await z.generateAsync({
+      type: 'blob',
+      compression: level > 0 ? 'DEFLATE' : 'STORE',
+      compressionOptions: { level: Math.max(1, Math.min(9, level)) }
+    });
+  }
+  const enc = new TextEncoder();
+  const chunks = [], central = [];
+  let offset = 0;
+  for (const f of files) {
+    const nameB = enc.encode(f.name);
+    const data = f.data instanceof Uint8Array ? f.data : new Uint8Array(f.data);
+    const crc = crc32(data);
+    let body = data, method = 0;
+    try { const d = await deflateRaw(data); if (d.length < data.length) { body = d; method = 8; } } catch (e) {}
+    const lh = new Uint8Array(30 + nameB.length);
+    const lv = new DataView(lh.buffer);
+    lv.setUint32(0, 0x04034b50, true); lv.setUint16(4, 20, true); lv.setUint16(6, 0x0800, true);
+    lv.setUint16(8, method, true); lv.setUint32(14, crc, true);
+    lv.setUint32(18, body.length, true); lv.setUint32(22, data.length, true);
+    lv.setUint16(26, nameB.length, true); lv.setUint16(28, 0, true);
+    lh.set(nameB, 30);
+    chunks.push(lh, body);
+
+    const cd = new Uint8Array(46 + nameB.length);
+    const cv = new DataView(cd.buffer);
+    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true);
+    cv.setUint16(8, 0x0800, true); cv.setUint16(10, method, true);
+    cv.setUint32(16, crc, true); cv.setUint32(20, body.length, true); cv.setUint32(24, data.length, true);
+    cv.setUint16(28, nameB.length, true); cv.setUint32(42, offset, true);
+    cd.set(nameB, 46);
+    central.push(cd);
+    offset += lh.length + body.length;
+  }
+  const cdSize = central.reduce((a, c) => a + c.length, 0);
+  const eocd = new Uint8Array(22);
+  const ev = new DataView(eocd.buffer);
+  ev.setUint32(0, 0x06054b50, true);
+  ev.setUint16(8, files.length, true); ev.setUint16(10, files.length, true);
+  ev.setUint32(12, cdSize, true); ev.setUint32(16, offset, true);
+  return new Blob([...chunks, ...central, eocd], { type: 'application/zip' });
+}
+
+/* ============================================================================
+   五、处理一个 .sb3；relPath 是它在拖入结构里的相对路径（如 关卡1/a.sb3）
+   ========================================================================== */
+async function optimizeSb3(file, relPath, opts, log) {
+  const entries = await unzip(await file.arrayBuffer());
+  const pjEntry = entries.find(e => e.name === 'project.json');
+  if (!pjEntry) throw new Error('压缩包里没有 project.json');
+
+  const project = JSON.parse(new TextDecoder('utf-8').decode(pjEntry.data));
+
+  if (opts.ext) {
+    const r = await analyzeProjectExtensions(project, opts.extNetwork, log);
+    if (r.newHats || r.newBlocks) log('  扩展分析：新识别 ' + r.newHats + ' 个帽子 / ' + r.newBlocks + ' 个积木', 'ok');
+    if (r.failed.length) log('  扩展分析失败（其积木按未知保守保留）：' + r.failed.join('、'), 'warn');
+    const unknown = diagnoseExtensions(project);
+    if (unknown.length) log('  未覆盖扩展（其积木按未知保守保留）：' + unknown.join('、'), 'warn');
+  }
+
+  const stats = { funcs: 0, dead: 0, shadows: 0 };
+
+  if (opts.funcs) {
+    const r = cleanUnusedProcedures(project);
+    stats.funcs = r.removed;
+    for (const nm of r.names) log('  移除：' + nm, 'k');
+  }
+  if (opts.dead) stats.dead = cleanDeadBlocks(project);
+  if (opts.shadows) stats.shadows = cleanAllShadowValues(project);
+
+  const sources = new Map(entries.map(e => [e.name, e.data]));
+  sources.set('project.json', new TextEncoder().encode(JSON.stringify(project)));
+
+  const outEntries = [...sources.entries()].map(([name, data]) => ({ name, data }));
+  const blob = await zipFiles(outEntries, opts.level);
+
+  const base = file.name.replace(/\.(sb3|sb2|zip)$/i, '');
+  const dir = relPath && relPath.includes('/') ? relPath.slice(0, relPath.lastIndexOf('/') + 1) : '';
+  const fileName = base + (opts.suffix ? '_cleaned' : '') + '.sb3';
+  const name = (opts.keepTree && dir) ? dir + fileName : fileName;
+  return { blob, name, fileName, inSize: file.size, outSize: blob.size, stats };
+}
+/*CORE_END*/
+
+/* ============================================================================
+   六、界面
+   ========================================================================== */
+const $ = s => document.querySelector(s);
+const el = {
+  drop: $('#drop'), dropInner: $('#dropInner'), pick: $('#pick'), pickDir: $('#pickDir'),
+  pickBtn: $('#pickBtn'), pickDirBtn: $('#pickDirBtn'),
+  files: $('#files'), cntHint: $('#cntHint'),
+  run: $('#run'), clear: $('#clear'), zipBtn: $('#zipBtn'), banner: $('#banner'),
+  log: $('#log'), res: $('#res'), barIn: $('#barIn'), status: $('#status'),
+  dataPill: $('#dataPill'),
+  opFuncs: $('#opFuncs'), opDead: $('#opDead'), opShadow: $('#opShadow'), opExt: $('#opExt'),
+  opTree: $('#opTree'), opSuffix: $('#opSuffix'), level: $('#level'), zipNote: $('#zipNote'),
+  themeBtn: $('#themeBtn')
+};
+
+const state = { files: [], results: [], hasJSZip: false };
+const fmt = n => n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
+const ACTIVE = () => state.hasJSZip;
+
+function log(msg, kind) {
+  const line = document.createElement('div');
+  if (kind) line.className = kind;
+  line.textContent = msg;
+  el.log.appendChild(line);
+  el.log.scrollTop = el.log.scrollHeight;
+}
+function banner(msg) {
+  if (!msg) { el.banner.hidden = true; return; }
+  el.banner.textContent = msg;
+  el.banner.hidden = false;
+}
+
+/* ── 主题（默认跟随系统，可切换） ── */
+function systemTheme() {
+  return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+}
+function applyTheme(t) {
+  document.documentElement.setAttribute('theme', t);
+  try { localStorage.setItem('sb3-theme', t); } catch (e) {}
+  el.themeBtn.innerHTML = t === 'dark'
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>';
+}
+el.themeBtn.onclick = () => applyTheme(document.documentElement.getAttribute('theme') === 'dark' ? 'light' : 'dark');
+
+/* ── 压缩等级：只允许 0~9 ── */
+const DEFAULT_LEVEL = 9;
+/** 读出一个合法的等级（0~9 的整数；非法一律回落到 9） */
+function levelValue() {
+  const digits = String(el.level.value).replace(/\D/g, '');
+  if (!digits) return DEFAULT_LEVEL;
+  const n = parseInt(digits.slice(0, 2), 10);          // 先按数字看
+  if (!Number.isFinite(n)) return DEFAULT_LEVEL;
+  return Math.min(9, Math.max(0, n));                   // 再夹到 0~9
+}
+/** 打字时立刻纠正：只留一位数字；>9 自动变 9 */
+function normalizeLevel() {
+  let v = String(el.level.value).replace(/\D/g, '');    // 去掉非数字
+  if (v.length > 1) v = v.slice(-1);                    // 只保留最后一位
+  if (v !== '' && Number(v) > 9) v = '9';
+  if (v !== el.level.value) el.level.value = v;
+}
+el.level.addEventListener('input', normalizeLevel);
+el.level.addEventListener('change', normalizeLevel);
+el.level.addEventListener('blur', () => {
+  normalizeLevel();
+  if (el.level.value === '') el.level.value = String(DEFAULT_LEVEL);
+});
+// 键盘上直接挡掉 e / + / - / . 这类（仅 Chromium 的 number 输入会触发）
+el.level.addEventListener('keydown', e => {
+  if (e.key.length === 1 && !/[0-9]/.test(e.key)) e.preventDefault();
+});
+
+/* ── 文件列表 ── */
+function renderFiles() {
+  el.files.innerHTML = '';
+  state.files.forEach((item, i) => {
+    const li = document.createElement('li');
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = item.path;
+    if (item.path !== item.file.name) nm.title = item.path;
+    const sz = document.createElement('span'); sz.className = 'sz'; sz.textContent = fmt(item.file.size);
+    const rm = document.createElement('button'); rm.textContent = '×'; rm.title = '移除';
+    rm.onclick = () => { state.files.splice(i, 1); renderFiles(); };
+    li.append(nm, sz, rm);
+    el.files.appendChild(li);
+  });
+
+  // 拖放区里显示已选内容（打包器的 .selected / .placeholder 两种状态）
+  if (state.files.length) {
+    const sel = document.createElement('div');
+    sel.className = 'selected';
+    state.files.slice(0, 3).forEach(item => {
+      const s = document.createElement('span'); s.textContent = item.path; sel.appendChild(s);
+    });
+    if (state.files.length > 3) {
+      const s = document.createElement('span'); s.textContent = '… 等 ' + state.files.length + ' 个文件'; sel.appendChild(s);
+    }
+    el.dropInner.replaceChildren(sel);
+  } else {
+    const ph = document.createElement('div');
+    ph.className = 'placeholder';
+    ph.textContent = '把 .sb3 或整个文件夹拖到这里';
+    const alt = document.createElement('p');
+    alt.className = 'alternative';
+    alt.innerHTML = '只会挑出文件夹里的 Scratch 文件（<code>.sb3</code> / <code>.sb2</code>），其它文件自动忽略';
+    el.dropInner.replaceChildren(ph, alt);
+  }
+
+  el.cntHint.textContent = state.files.length ? ('已选 ' + state.files.length + ' 个 Scratch 文件') : '还没有选择文件';
+  el.run.disabled = state.files.length === 0;
+  el.status.textContent = state.files.length ? '准备好了，点“开始优化”' : '等待选择文件…';
+}
+
+/** list 元素既可以是 File，也可以是 {file, path}（拖文件夹 / 选文件夹时带相对路径） */
+function addFiles(list) {
+  for (const item of list) {
+    const file = item.file || item;
+    const path = item.path || file.name;
+    if (!/\.(sb3|sb2)$/i.test(file.name)) continue;           // ← 只收 Scratch 文件
+    if (state.files.some(x => x.path === path && x.file.size === file.size)) continue;
+    state.files.push({ file, path });
+  }
+  renderFiles();
+}
+
+/* ── 三种输入方式：拖文件 / 拖文件夹 / 按钮选择 ── */
+el.pickBtn.onclick = () => el.pick.click();
+el.pickDirBtn.onclick = () => el.pickDir.click();
+el.pick.onchange = e => { addFiles([...e.target.files]); el.pick.value = ''; };
+el.pickDir.onchange = e => {
+  addFiles([...e.target.files].map(f => ({ file: f, path: f.webkitRelativePath || f.name })));
+  el.pickDir.value = '';
+};
+
+/** 递归收集拖入的条目，并记录相对路径（拖入的文件夹名会作为路径开头） */
+async function walkEntry(entry, out, prefix) {
+  if (!entry) return;
+  if (entry.isFile) {
+    await new Promise(res => entry.file(f => { out.push({ file: f, path: prefix + f.name }); res(); }, res));
+  } else if (entry.isDirectory) {
+    const reader = entry.createReader(), all = [];
+    await new Promise(res => {
+      const step = () => reader.readEntries(batch => {
+        if (!batch.length) return res();
+        all.push(...batch); step();
+      }, res);
+      step();
+    });
+    for (const e of all) await walkEntry(e, out, prefix + entry.name + '/');
+  }
+}
+
+/** 用 File System Access 句柄递归收集（Chromium；句柄在 drop 之后仍然有效，最稳） */
+async function walkHandle(handle, out, prefix) {
+  if (!handle) return;
+  if (handle.kind === 'file') {
+    const f = await handle.getFile();
+    out.push({ file: f, path: prefix + f.name });
+  } else if (handle.kind === 'directory') {
+    for await (const child of handle.values()) {
+      await walkHandle(child, out, prefix + handle.name + '/');
+    }
+  }
+}
+
+['dragenter', 'dragover'].forEach(t => el.drop.addEventListener(t, e => { e.preventDefault(); el.drop.classList.add('dropping'); }));
+['dragleave', 'drop'].forEach(t => el.drop.addEventListener(t, e => {
+  e.preventDefault();
+  if (t === 'drop' || !el.drop.contains(e.relatedTarget)) el.drop.classList.remove('dropping');
+}));
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => e.preventDefault());
+
+el.drop.addEventListener('drop', async e => {
+  e.preventDefault();
+
+  // ⚠️ 回调是 async：一旦 await，浏览器就会清空拖拽数据 —— 所以下面全部【同步】抓下来
+  const dt = e.dataTransfer;
+  const snapshot = dt.files ? Array.from(dt.files) : [];
+  const handles = [], entries = [];
+  if (dt.items) {
+    for (const it of Array.from(dt.items)) {
+      if (it.kind && it.kind !== 'file') continue;
+      if (it.getAsFileSystemHandle) {                    // Chromium：首选
+        try { handles.push(it.getAsFileSystemHandle()); } catch (err) {}
+      }
+      if (it.webkitGetAsEntry) {                         // 其它浏览器
+        try { const en = it.webkitGetAsEntry(); if (en) entries.push(en); } catch (err) {}
+      }
+    }
+  }
+
+  // 依次尝试三种读取方式，哪种拿到文件就用哪种
+  let found = [], how = '';
+  if (handles.length) {
+    try {
+      for (const h of await Promise.all(handles)) await walkHandle(h, found, '');
+      if (found.length) how = 'File System Access 句柄';
+    } catch (err) { found = []; }
+  }
+  if (!found.length && entries.length) {
+    try {
+      for (const en of entries) await walkEntry(en, found, '');
+      if (found.length) how = '拖拽条目 API';
+    } catch (err) { found = []; }
+  }
+  if (!found.length && snapshot.length) {
+    found = snapshot.map(f => ({ file: f, path: f.name }));
+    if (found.length) how = '文件快照';
+  }
+
+  const before = state.files.length;
+  addFiles(found);
+  const added = state.files.length - before;
+
+  if (added > 0) {
+    log('已加入 ' + added + ' 个 Scratch 文件（来源：' + how + '）', 'ok');
+    banner('');
+  } else if (snapshot.length || entries.length || handles.length) {
+    // 拖进来东西了却一个 Scratch 文件都没读到：多半是"拖文件夹"被浏览器挡住了
+    const folderLike = snapshot.length > 0 && snapshot.every(f => !/\.(sb3|sb2)$/i.test(f.name));
+    banner(folderLike
+      ? '浏览器没能读取拖进来的文件夹内容（浏览器限制）。请改用上面的「选择文件夹」按钮 —— 那个一定能读到全部文件。'
+      : '没有发现 .sb3 / .sb2 文件 —— 文件夹里可能没有 Scratch 作品。');
+    log('拖拽未加入任何文件（已尝试：' + (handles.length ? '句柄/' : '') + (entries.length ? '条目/' : '') + '快照' + '）', 'warn');
+  } else {
+    banner('没能读取拖拽内容，请改用上面的「选择文件 / 选择文件夹」。');
+  }
+});
+
+el.clear.onclick = () => {
+  state.files = []; state.results = [];
+  renderFiles();
+  el.res.innerHTML = '<li style="border:none"><span class="nm">还没有结果</span></li>';
+  el.zipBtn.hidden = true;
+  el.barIn.style.width = '0%';
+  el.log.textContent = '// 日志会显示在这里';
+  banner('');
+};
+
+/* ── 运行 ── */
+el.run.onclick = async () => {
+  const opts = {
+    funcs: el.opFuncs.checked, dead: el.opDead.checked, shadows: el.opShadow.checked,
+    ext: el.opExt.checked, extNetwork: el.opExt.checked,
+    keepTree: el.opTree.checked, suffix: el.opSuffix.checked,
+    level: ACTIVE() ? levelValue() : DEFAULT_LEVEL
+  };
+  if (!opts.funcs && !opts.dead && !opts.shadows && !opts.ext) { banner('至少勾选一项优化。'); return; }
+  banner('');
+
+  const total = state.files.length;
+  log('压缩方式：' + (ACTIVE() ? 'JSZip（等级 ' + opts.level + '）' : '浏览器内置 deflate（默认等级）'), 'k');
+  log('输出结构：' + (opts.keepTree ? '保留文件夹结构' : '平铺到根目录'), 'k');
+
+  el.run.disabled = true; el.clear.disabled = true; el.zipBtn.hidden = true;
+  state.results = [];
+  el.res.innerHTML = '';
+
+  const t0 = performance.now();
+  let done = 0, before = 0, after = 0;
+
+  for (const item of state.files) {
+    log('[' + (done + 1) + '/' + total + '] ' + item.path, 'hl');
+    el.status.textContent = '正在处理 ' + item.path;
+    try {
+      const r = await optimizeSb3(item.file, item.path, opts, log);
+      before += r.inSize; after += r.outSize;
+      state.results.push(r);
+      const pct = r.inSize ? Math.round((1 - r.outSize / r.inSize) * 100) : 0;
+      log('  完成 → ' + r.name + '（' + fmt(r.outSize) + '，' + (r.inSize >= r.outSize ? '省 ' + pct + '%' : '略增') + '）', 'ok');
+      log('  函数 -' + r.stats.funcs + ' ｜ 死块 -' + r.stats.dead + ' ｜ 阴影值 -' + r.stats.shadows, 'k');
+    } catch (e) {
+      log('  处理失败：' + e.message, 'err');
+    }
+    done++;
+    el.barIn.style.width = Math.round(done / total * 100) + '%';
+  }
+
+  renderResults(before, after, Math.round(performance.now() - t0));
+  el.run.disabled = false; el.clear.disabled = false;
+  el.status.textContent = '完成：' + state.results.length + ' / ' + total + ' 个文件';
+};
+
+function renderResults(before, after, ms) {
+  el.res.innerHTML = '';
+  if (!state.results.length) { el.res.innerHTML = '<li style="border:none"><span class="nm">没有成功的结果</span></li>'; return; }
+  el.zipBtn.hidden = state.results.length < 2;
+
+  for (const r of state.results) {
+    const li = document.createElement('li');
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = r.name;
+    const pct = r.inSize ? Math.round((1 - r.outSize / r.inSize) * 100) : 0;
+    const d = document.createElement('small');
+    d.textContent = fmt(r.inSize) + ' → ' + fmt(r.outSize) + (r.inSize >= r.outSize ? '  −' + pct + '%' : '');
+    nm.appendChild(d);
+    const a = document.createElement('a'); a.textContent = '下载';
+    a.href = URL.createObjectURL(r.blob); a.download = r.fileName;
+    li.append(nm, a);
+    el.res.appendChild(li);
+  }
+  if (state.results.length > 1) {
+    const pctAll = before ? Math.round((1 - after / before) * 100) : 0;
+    log('全部完成：' + state.results.length + ' 个文件，合计 ' + fmt(before) + ' → ' + fmt(after) +
+        '（省 ' + pctAll + '%），用时 ' + ms + 'ms', 'ok');
+  }
+}
+
+/* ── 多文件打包 ── */
+el.zipBtn.onclick = async () => {
+  if (!state.results.length) return;
+  el.zipBtn.disabled = true;
+  log('正在打包 ' + state.results.length + ' 个文件…', 'k');
+  const used = new Map(), files = [];
+  for (const r of state.results) {
+    let name = r.name;
+    if (used.has(name)) {
+      const n = used.get(name) + 1; used.set(name, n);
+      const dot = name.lastIndexOf('.');
+      name = name.slice(0, dot) + ' (' + n + ')' + name.slice(dot);
+    } else used.set(name, 0);
+    files.push({ name, data: new Uint8Array(await r.blob.arrayBuffer()) });
+  }
+  const blob = await zipFiles(files, ACTIVE() ? levelValue() : DEFAULT_LEVEL);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Scratch优化结果.zip';
+  a.click();
+  log('打包完成 → Scratch优化结果.zip（' + fmt(blob.size) + '）', 'ok');
+  el.zipBtn.disabled = false;
+};
+
+/* ── JSZip：优先 CDN，连不上就用内置压缩 ── */
+const JSZIP_CDNS = [
+  'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+  'https://unpkg.com/jszip@3.10.1/dist/jszip.min.js',
+  'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js'
+];
+function loadScript(url, timeout = 7000) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = url; s.async = true;
+    const t = setTimeout(() => { s.remove(); rej(new Error('timeout')); }, timeout);
+    s.onload = () => { clearTimeout(t); res(); };
+    s.onerror = () => { clearTimeout(t); s.remove(); rej(new Error('error')); };
+    document.head.appendChild(s);
+  });
+}
+async function ensureJSZip() {
+  if (typeof JSZip !== 'undefined') return true;
+  for (const url of JSZIP_CDNS) {
+    try { await loadScript(url); if (typeof JSZip !== 'undefined') return true; } catch (e) {}
+  }
+  return false;
+}
+
+/* ── 启动 ── */
+(async function boot() {
+  document.documentElement.setAttribute('theme', systemTheme());
+  let saved = null;
+  try { saved = localStorage.getItem('sb3-theme'); } catch (e) {}
+  applyTheme(saved || systemTheme());
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ev => {
+      let s = null; try { s = localStorage.getItem('sb3-theme'); } catch (e) {}
+      if (!s) applyTheme(ev.matches ? 'dark' : 'light');
+    });
+  }
+
+  el.dataPill.textContent = '内置积木数据：' + HAT_OPCODES.size + ' 帽子 / ' + ALL_OPCODES.size + ' 已知积木 / ' + KNOWN_PREFIXES.size + ' 前缀';
+  renderFiles();
+
+  let ok = true;
+  try { new CompressionStream('deflate-raw'); new DecompressionStream('deflate-raw'); } catch (e) { ok = false; }
+  if (!ok) banner('当前浏览器不支持 CompressionStream("deflate-raw")，无法读写 .sb3，请用较新的 Chrome / Edge / Firefox。');
+
+  el.level.disabled = true;
+  const has = await ensureJSZip();
+  state.hasJSZip = has;
+  el.level.disabled = !has;
+  if (has) {
+    el.zipNote.textContent = '已加载 JSZip，可自由调节压缩等级（0 = 仅存储，9 = 最大压缩）。';
+    log('JSZip 已就绪（CDN），压缩等级可控。', 'ok');
+  } else {
+    el.zipNote.textContent = '网络不可用 / CDN 被拦截 → 已回退到浏览器内置 deflate（默认压缩等级）。';
+    log('未能加载 JSZip，回退到浏览器内置压缩（默认等级）。', 'warn');
+  }
+})();
+</script>
+</body>
+</html>

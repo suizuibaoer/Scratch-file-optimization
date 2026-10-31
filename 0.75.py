@@ -1,6 +1,7 @@
 import json
 import zipfile
 import os
+import sys
 import shutil
 import tempfile
 import re
@@ -10,6 +11,38 @@ import urllib.request
 import urllib.parse
 from collections import defaultdict
 from copy import deepcopy
+
+
+def setup_console_encoding():
+    """让中文输出在任何控制台都不崩（Windows / macOS / Linux 通用）。
+
+    策略：
+      1. 保留控制台原本的编码（中文 Windows 上是 cp936，直接输出就是对的），
+         只把错误策略改成 replace —— 万一某个字符编不出来，用 ? 顶替，
+         而不是抛 UnicodeEncodeError 直接把程序干掉。
+      2. 如果当前编码连"中文"都编不出来（比如英文 Windows 的 cp437），
+         就把 Windows 控制台切到 UTF-8 再输出，尽量让它可读。
+    """
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(errors="replace")
+        except Exception:
+            pass
+
+    try:
+        "中文".encode(getattr(sys.stdout, "encoding", None) or "ascii")
+        return                     # 原生编码就能输出中文，保持不动
+    except Exception:
+        pass
+
+    try:
+        if sys.platform == "win32":
+            import ctypes
+            ctypes.windll.kernel32.SetConsoleOutputCP(65001)
+        for stream in (sys.stdout, sys.stderr):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
 
 # ============================================================
@@ -686,18 +719,47 @@ def _fetch_url(url):
 
 
 def _enter_pressed():
-    """非阻塞检测：当前是否有回车在等待输入（Windows 控制台有效）。"""
+    """非阻塞检测：当前是否有回车在等待输入（Windows / macOS / Linux 都能用）。
+
+    - Windows：msvcrt.kbhit / getwch 直接读控制台缓冲区
+    - macOS / Linux：select + termios 把 stdin 临时切到非规范模式读一个字符
+    两头都不支持时返回 False —— 只是"回车跳过"这一个小特性失效，不影响其它功能。
+    """
+    # —— Windows ——
     try:
         import msvcrt
-    except ImportError:
-        return False
-    try:
         pressed = False
         while msvcrt.kbhit():
             ch = msvcrt.getwch()
             if ch in ("\r", "\n"):
                 pressed = True
         return pressed
+    except ImportError:
+        pass                       # 不是 Windows，往下走 POSIX 分支
+    except Exception:
+        return False
+
+    # —— macOS / Linux ——
+    try:
+        import select
+        import termios
+        import tty
+        if not sys.stdin.isatty():
+            return False           # stdin 被重定向了，没有"按键"可言
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setcbreak(fd)      # 关掉行缓冲与回显（Ctrl-C 仍然有效）
+            pressed = False
+            while select.select([sys.stdin], [], [], 0)[0]:
+                ch = sys.stdin.read(1)
+                if ch in ("\n", "\r"):
+                    pressed = True
+                elif ch == "":
+                    break
+            return pressed
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)   # 一定要还原
     except Exception:
         return False
 
@@ -1294,6 +1356,7 @@ BLOCK_META_HAT_COUNT = _load_block_meta()
 
 if __name__ == "__main__":
     try:
+        setup_console_encoding()
         print("=== scratch文件优化工具 (V0.7) ===")
         if BLOCK_META_HAT_COUNT is not None:
             print(f"[积木元数据] 内置数据 + hat_opcodes.json："
@@ -1306,10 +1369,16 @@ if __name__ == "__main__":
         if not raw_input:
             print("未输入任何内容!")
         else:
-            # 解析输入的路径
+            # 解析输入的路径：带引号的按引号切（拖拽时 Windows 会自动加引号），
+            # 其余按空白切（可以一次输入多个路径）
             paths = re.findall(r'"([^"]+)"|(\S+)', raw_input)
-            # flatten list and filter empty
             valid_paths = [p[0] if p[0] else p[1] for p in paths]
+
+            # 兜底：整行本身就是一个“真实存在”的路径
+            # （例如带空格但没加引号 —— 手输 / 粘贴时很常见，别被空格拆坏）
+            whole = raw_input.strip().strip('"')
+            if whole and os.path.exists(whole) and whole not in valid_paths:
+                valid_paths = [whole]
 
             # 获取用户配置
             operations = ask_operations()
